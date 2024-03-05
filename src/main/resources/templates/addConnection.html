@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        lang="en"
+        layout:decorate="layout/main">
+
+<body>
+<div layout:fragment="content">
+    <!--table friend list-->
+    <div class="container mt-5">
+        <div class="row">
+            <h4>La liste de mes amis</h4>
+            <table class="table table-hover">
+                <thead>
+                <tr class="table-primary">
+                    <th scope="col">#</th>
+                    <th scope="col">First name</th>
+                    <th scope="col">Last name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                <tr th:if="${friendList.isEmpty()}">
+                    <td colspan="5">
+                        <div class="text-center my-3">Aucune relation pour le moment ...</div>
+                    </td>
+                </tr>
+
+                <tr th:each="friend,  iStat: ${friendList}">
+                    <td><span th:text="${iStat.index+1}"></span></td>
+                    <td><span th:text="${friend.firstName}"></span></td>
+                    <td><span th:text="${friend.lastName}"></span></td>
+                    <td><span th:text="${friend.email}"></span></td>
+                    <td>
+                        <a th:href="@{'/delete-friend/' + ${friend.id}}" class="btn btn-danger">Supprimer</a>
+                    </td>
+                    <!-- Cellule vide si le bouton n'est pas présent -->
+
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!--table user list-->
+
+    <div class="container mt-5">
+        <div class="row">
+            <h4>La liste des utilisateurs</h4>
+            <table class="table table-hover">
+                <thead>
+                <tr class="table-primary">
+                    <th scope="col">#</th>
+                    <th scope="col">First name</th>
+                    <th scope="col">Last name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                <tr th:if="${userList.isEmpty()}">
+                    <td colspan="5">
+                        <div class="text-center my-3">Aucun utilisateur à ajouter</div>
+                    </td>
+                </tr>
+
+                <tr th:each="user,  iStat: ${userList}">
+                    <td><span th:text="${iStat.index+1}"></span></td>
+                    <td><span th:text="${user.firstName}"></span></td>
+                    <td><span th:text="${user.lastName}"></span></td>
+                    <td><span th:text="${user.email}"></span></td>
+                    <td>
+                        <a th:href="@{'/add-friend/' + ${user.id}}" class="btn btn-success">Ajouter</a>
+                    </td>
+
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

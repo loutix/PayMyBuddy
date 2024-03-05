@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        lang="en"
+        layout:decorate="layout/main">
+<body>
+<div layout:fragment="content">
+
+    <section>
+        <div th:if="${param.success}">
+            <div class="alert alert-info text-center alert-dismissible fade show" role="alert">
+                <strong>The amount has been successfully credited to your account</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    </section>
+
+    <div class="card">
+        <h5 class="card-header">Bank account situation</h5>
+        <div class="card-body px-4 text-center">
+
+            <div class="col-md-12 my-4">
+                <h6> Value available on the application :
+                    <strong th:text="${bankAmount >= 0 ? '+' : '-'} + ${bankAmount} + ' Euros'"
+                            th:class="${bankAmount >= 0 ? 'text-success' : 'text-danger'}">
+                    </strong>
+                </h6>
+            </div>
+            <form class="row g-3 mb-3"
+                  method="post"
+                  role="form"
+                  th:action="@{/my-account-statement/save}"
+                  th:object="${depositDto}">
+
+                <div class="col-md-6 offset-md-3 ">
+                    <input style="text-align:center;"
+                           id="credit"
+                           class="form-control"
+                           name="credit"
+                           type="number"
+                           step="0"
+                           min="1" max="10000"
+                           th:field="*{credit}"
+                           placeholder="Credit my account Pay My Buddy"
+                           required>
+
+
+                    <div th:if="${#fields.hasErrors('credit')}" class="text-danger">
+                        <p th:errors="*{credit}" class="error"></p>
+                    </div>
+                </div>
+                <span> <i>Credit between 1€ and 10 000€</i></span>
+                <div class="col-md-12 mt-4">
+                    <button type="submit" class="btn btn-primary ">Confirm deposit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

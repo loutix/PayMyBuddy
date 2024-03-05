@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        lang="en"
+        layout:decorate="layout/main">
+<body>
+<div layout:fragment="content">
+
+    <div class="row my-4">
+        <div class="col-sm">
+            <h5>Send Money</h5>
+        </div>
+        <div class="col-sm">
+
+        </div>
+        <div class="col-sm">
+            <a th:href="@{/add-connection}">
+                <button type="button" class="btn btn-outline-primary">Add connection</button>
+            </a>
+
+        </div>
+    </div>
+
+    <section>
+        <div th:if="${param.error}">
+            <div class="alert alert-danger text-center alert-dismissible fade show" role="alert">
+                Insufficient bank funds, please credit your account and retry
+                <a th:href="@{/my-account-statement}">Here</a>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+        </div>
+        <div th:if="${param.success}">
+            <div class="alert alert-info text-center alert-dismissible fade show" role="alert">
+                <strong>The transfer was made with susses to your friend</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    </section>
+
+
+    <div class="row py-4 bg-light border">
+        <div>
+            <form class="row"
+                  method="post"
+                  role="form"
+                  th:object="${transferDto}"
+                  th:action="@{/transfer/save}"
+            >
+                <div class="col-3">
+
+                    <select class="form-select text-center"
+                            id="friend"
+                            name="userCustom"
+                            th:field="*{userCustom}"
+                            required>
+                        <option th:selected="disabled" value="">Select one friend</option>
+                        <option th:each="friend : ${friendList}"
+                                th:value="${friend.id}"
+                                th:text="${friend.getFullName()}">
+                        </option>
+                    </select>
+
+                </div>
+
+                <div class="col-3">
+                    <input style="text-align:center;"
+                           class="form-control"
+                           id="debit"
+                           type="number"
+                           step="0"
+                           min="1"
+                           max="1000000"
+                           th:field="*{amount}"
+                           placeholder="Amount €"
+                           required>
+
+                    <div th:if="${#fields.hasErrors('amount')}" class="text-danger">
+                        <p th:errors="*{amount}" class="error"></p>
+                    </div>
+
+                </div>
+
+                <div class="col-3">
+                    <input style="text-align:center;"
+                           class="form-control"
+                           id="description"
+                           type="text"
+                           minlength="3"
+                           maxlength="25"
+                           th:field="*{description}"
+                           placeholder="Description"
+                           required>
+                </div>
+
+                <div class="col-3 text-center">
+                    <button type="submit" class="btn btn-success">Confirm deposit</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+    <div class="row my-4">
+        <h4>La liste des transactions</h4>
+        <table class="table table-hover text-center">
+            <thead>
+            <tr class="table-success">
+                <th scope="col">#</th>
+                <th scope="col">Friend</th>
+                <th scope="col">Description</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Date - hours</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            <tr th:if="${ transactionList == null }">
+                <td colspan="5">
+                    <div class="text-center my-3">No history at the moment...</div>
+                </td>
+            </tr>
+
+            <tr th:each="transaction,  iStat: ${transactionList}">
+                <td><span th:text="${iStat.index+1}"></span></td>
+                <td><span th:text="${transaction.getFriendBankAccount().getUserCustom().getFullName()}"></span></td>
+                <td><span th:text="${transaction.getDescription()}"></span></td>
+                <td>
+                            <span
+                                    th:class="${transaction.getTransactionType().name() == 'CREDIT' ? 'text-success' : 'text-danger' }"
+                                    th:text="${transaction.getTransactionType().name() == 'CREDIT'  ? '+ ' : '- '} + ${transaction.getAmount()}">
+                            </span>
+                </td>
+                <td>
+                    <span th:text="${transaction.getFormattedDate()}"></span>
+<!--                    <span th:text="${#temporals.format(transaction.getDate(), 'dd-MM-yyyy - HH:mm')}"></span>  -->
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/transfer(page=0)}">First</a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/transfer(page=${currentPage - 1})}">Previous</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, transactionList.totalPages - 1)}"
+                    th:classappend="${currentPage == i ? 'active' : ''}">
+                    <a class="page-link" th:href="@{/transfer(page=${i})}" th:text="${i + 1}"></a>
+                </li>
+                <li class="page-item"
+                    th:classappend="${currentPage == transactionList.totalPages - 1 ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/transfer(page=${currentPage + 1})}">Next</a>
+                </li>
+                <li class="page-item"
+                    th:classappend="${currentPage == transactionList.totalPages - 1 ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/transfer(page=${transactionList.totalPages - 1})}">Last</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+</div>
+
+</body>
+</html>
