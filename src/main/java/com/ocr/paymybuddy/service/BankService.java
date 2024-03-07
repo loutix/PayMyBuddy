@@ -1,6 +1,7 @@
 package com.ocr.paymybuddy.service;
 
 
+import com.ocr.paymybuddy.constants.Fare;
 import com.ocr.paymybuddy.dto.DepositDto;
 import com.ocr.paymybuddy.dto.TransferDto;
 import com.ocr.paymybuddy.dto.TransferDtoSave;
@@ -11,6 +12,9 @@ import com.ocr.paymybuddy.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Service
 
@@ -31,20 +35,20 @@ public class BankService {
     public void saveBankAccount(UserCustom userCustom) {
         BankAccount bankAccount = new BankAccount();
         bankAccount.setUserCustom(userCustom);
-        bankAccount.setBalance(0);
+        bankAccount.setBalance(BigDecimal.ZERO);
         bankAccountRepository.save(bankAccount);
-
     }
 
 
     /**
-     *  Get the balance bank account
+     * Get the balance bank account
+     *
      * @param userDetails userDetails
      * @return integer
      */
-    public Integer getBankAmount(UserDetails userDetails) {
+    public BigDecimal getBankAmount(UserDetails userDetails) {
         UserCustom userCustom = userRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        return userCustom.getBankAccount().getBalance();
+        return userCustom.getBankAccount().getBalanceRounded();
     }
 
     /**
@@ -56,9 +60,41 @@ public class BankService {
      */
     public BankAccount creditDeposit(UserDetails userDetails, DepositDto depositDto) {
         BankAccount bankAccount = bankAccountRepository.findByUserCustomEmail(userDetails.getUsername()).orElseThrow(() -> new UsernameNotFoundException("Bank account not found"));
-        bankAccount.setBalance(bankAccount.getBalance() + depositDto.getCredit());
+        bankAccount.setBalance(bankAccount.getBalance().add(depositDto.getCredit()));
         bankAccountRepository.save(bankAccount);
         return bankAccount;
+    }
+
+
+    /**
+     * Control if the user has enough credit to make the transfer
+     *
+     * @param amount  amount
+     * @param balance balance
+     * @return boolean
+     */
+    public Boolean controlBalance(Double amount, BigDecimal balance) {
+
+        //Convert Dto to BigDecimal
+        BigDecimal amountBigDecimal = BigDecimal.valueOf(amount);
+
+        //Calculate fees
+        BigDecimal fees = calculateTransactionFees(amountBigDecimal);
+
+        //Total
+        BigDecimal amountWithFees = amountBigDecimal.add(fees);
+
+        return balance.compareTo(amountWithFees) > 0;
+    }
+
+    /**
+     * Calculate fees amount
+     *
+     * @param amount amount
+     * @return BigDecimal
+     */
+    private BigDecimal calculateTransactionFees(BigDecimal amount) {
+        return amount.multiply(Fare.TRANSACTION_FEE_RATE).setScale(2, RoundingMode.HALF_UP);
     }
 
     /**
@@ -69,20 +105,43 @@ public class BankService {
      * @return TransferDtoSave
      */
     public TransferDtoSave transferToFriend(UserDetails userDetails, TransferDto transferDto) {
-        BankAccount bankAccountDebit = bankAccountRepository.findByUserCustomEmail(userDetails.getUsername()).orElseThrow(() -> new UsernameNotFoundException("Bank account not found"));
+        BankAccount bankAccountDebit = getBankAccount(userDetails);
         BankAccount bankAccountCredit = bankAccountRepository.findByUserCustomEmail(transferDto.getUserCustom().getEmail()).orElseThrow(() -> new UsernameNotFoundException("Bank account not found"));
 
-        Integer amount = transferDto.getAmount();
+        BigDecimal amount = transferDto.getAmountRounded();
+        BigDecimal fees = calculateTransactionFees(amount);
 
-        // debit the user account
-        bankAccountDebit.setBalance(bankAccountDebit.getBalance() - amount);
-        bankAccountRepository.save(bankAccountDebit);
+        // debit the debtor
+        debitAccount(bankAccountDebit, amount);
+        // credit the creditor
+        creditAccount(bankAccountCredit, amount);
 
-        // credit friend account
-        bankAccountCredit.setBalance(bankAccountCredit.getBalance() + amount);
-        bankAccountRepository.save(bankAccountCredit);
+        return new TransferDtoSave(bankAccountDebit, bankAccountCredit,amount, fees, transferDto.getDescription(), transferDto.getDate());
+    }
 
-        return new TransferDtoSave(bankAccountDebit, bankAccountCredit, amount, transferDto.getDescription(), transferDto.getDate());
+
+    /**
+     * Debit the debtor bank account including fees
+     *
+     * @param bankAccount bankAccount
+     * @param amount      amount
+     */
+    public void debitAccount(BankAccount bankAccount, BigDecimal amount) {
+        BigDecimal fees = calculateTransactionFees(amount);
+        BigDecimal totalAmount = amount.add(fees);
+        bankAccount.setBalance(bankAccount.getBalance().subtract(totalAmount));
+        bankAccountRepository.save(bankAccount);
+    }
+
+    /**
+     * Credit the creditor bank account
+     *
+     * @param bankAccount bankAccount
+     * @param amount      amount
+     */
+    public void creditAccount(BankAccount bankAccount, BigDecimal amount) {
+        bankAccount.setBalance(bankAccount.getBalance().add(amount));
+        bankAccountRepository.save(bankAccount);
     }
 
     public BankAccount getBankAccount(UserDetails userDetails) {

@@ -9,6 +9,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+
 @Service
 public class TransactionService {
 
@@ -18,37 +20,34 @@ public class TransactionService {
         this.transactionRepository = transactionRepository;
     }
 
-
     /**
      * Save a transaction between user and their friend
      *
      * @param transferDtoSave transferDtoSave
      */
-
     public void saveTransaction(TransferDtoSave transferDtoSave) {
-
-        if (!transferDtoSave.getBankOrigin().equals(transferDtoSave.getBankTarget())) {
-            // Debitor
-            Transaction transactionDebtor = new Transaction();
-            transactionDebtor.setAmount(transferDtoSave.getAmount());
-            transactionDebtor.setDescription(transferDtoSave.getDescription());
-            transactionDebtor.setTransactionType(TransactionType.DEBIT);
-            transactionDebtor.setBankAccount(transferDtoSave.getBankOrigin());
-            transactionDebtor.setFriendBankAccount(transferDtoSave.getBankTarget());
-            transactionDebtor.setDate(transferDtoSave.getDate());
-            transactionRepository.save(transactionDebtor);
-        }
-
+        // Debtor
+        String fees = transferDtoSave.getFees().toString();
+        String descriptionWithFees = transferDtoSave.getDescription() + " (inc."+ fees + "€ fees)";
+        //Debtor
+        saveSingleTransaction(transferDtoSave,descriptionWithFees ,transferDtoSave.getAmount().add(transferDtoSave.getFees()), TransactionType.DEBIT, transferDtoSave.getBankOrigin(), transferDtoSave.getBankTarget());
         //Creditor
-        Transaction transactionCreditor = new Transaction();
-        transactionCreditor.setAmount(transferDtoSave.getAmount());
-        transactionCreditor.setDescription(transferDtoSave.getDescription());
-        transactionCreditor.setTransactionType(TransactionType.CREDIT);
-        transactionCreditor.setBankAccount(transferDtoSave.getBankTarget());
-        transactionCreditor.setFriendBankAccount(transferDtoSave.getBankOrigin());
-        transactionCreditor.setDate(transferDtoSave.getDate());
-        transactionRepository.save(transactionCreditor);
+        saveSingleTransaction(transferDtoSave,transferDtoSave.getDescription(),transferDtoSave.getAmount(), TransactionType.CREDIT, transferDtoSave.getBankTarget(), transferDtoSave.getBankOrigin());
     }
+
+
+    private void saveSingleTransaction(TransferDtoSave transferDtoSave, String description,  BigDecimal amount, TransactionType transactionType, BankAccount owner, BankAccount friend) {
+        Transaction transaction = new Transaction();
+        transaction.setAmount(amount);
+        transaction.setDescription(description);
+        transaction.setTransactionType(transactionType);
+        transaction.setBankAccount(owner);
+        transaction.setFriendBankAccount(friend);
+        transaction.setDate(transferDtoSave.getDate());
+        transactionRepository.save(transaction);
+
+    }
+
 
     public Page<Transaction> getTransactionsByBankAccount(BankAccount bankAccount, int page) {
         PageRequest pageRequest = PageRequest.of(page, 5);

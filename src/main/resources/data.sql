@@ -33,7 +33,7 @@ VALUES ('John', 'Dupont', '1@gmail.com', '$2a$10$rgVyJt18/S/QFuDoL1oqoOOYPjLvyN2
 CREATE TABLE bank_accounts
 (
     id      INT AUTO_INCREMENT PRIMARY KEY,
-    balance INT DEFAULT 0,
+    balance DECIMAL(10, 2) DEFAULT 0.00,
     user_id INT,
     CONSTRAINT fk_user_bank_account FOREIGN KEY (user_id) REFERENCES users (id)
 );
@@ -65,8 +65,8 @@ VALUES (1, 2),
 CREATE TABLE transactions
 (
     id               INT AUTO_INCREMENT PRIMARY KEY,
-    amount           INT,
-    description      VARCHAR(25),
+    amount           DECIMAL(10, 2) DEFAULT 0.00,
+    description      VARCHAR(50),
     transaction_type VARCHAR(25),
     date             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     bank_account_id  INT,

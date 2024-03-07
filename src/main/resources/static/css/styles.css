@@ -6,3 +6,12 @@
     margin-top: auto;/* Footer height */
 }
 
+#fees{
+    font-weight: lighter;
+    font-style: italic ;
+    font-size: small;
+}
+
+.description-cell{
+    font-size: small;
+}

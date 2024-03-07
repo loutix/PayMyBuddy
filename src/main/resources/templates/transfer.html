@@ -15,7 +15,7 @@
         </div>
         <div class="col-sm">
             <a th:href="@{/add-connection}">
-                <button type="button" class="btn btn-outline-primary">Add connection</button>
+                <button type="button" class="btn btn-outline-primary">Add Friend</button>
             </a>
 
         </div>
@@ -68,12 +68,17 @@
                            class="form-control"
                            id="debit"
                            type="number"
-                           step="0"
+                           step='0.01'
+                           value='0.00'
                            min="1"
                            max="1000000"
                            th:field="*{amount}"
                            placeholder="Amount €"
-                           required>
+                           required
+                           oninput="calculateFees(this.value)">
+
+                    <div id="fees" class="text-center pt-1">
+                    </div>
 
                     <div th:if="${#fields.hasErrors('amount')}" class="text-danger">
                         <p th:errors="*{amount}" class="error"></p>
@@ -96,7 +101,6 @@
                 <div class="col-3 text-center">
                     <button type="submit" class="btn btn-success">Confirm deposit</button>
                 </div>
-
             </form>
         </div>
     </div>
@@ -121,9 +125,11 @@
             </tr>
 
             <tr th:each="transaction,  iStat: ${transactionList}">
-                <td><span th:text="${iStat.index+1}"></span></td>
+                <td ><span th:text="${iStat.index+1}"></span></td>
                 <td><span th:text="${transaction.getFriendBankAccount().getUserCustom().getFullName()}"></span></td>
-                <td><span th:text="${transaction.getDescription()}"></span></td>
+                <td class="description-cell" style="min-width: 150px;">
+                    <span th:utext="${transaction.getDescription()}"></span>
+                </td>
                 <td>
                             <span
                                     th:class="${transaction.getTransactionType().name() == 'CREDIT' ? 'text-success' : 'text-danger' }"
@@ -132,7 +138,7 @@
                 </td>
                 <td>
                     <span th:text="${transaction.getFormattedDate()}"></span>
-<!--                    <span th:text="${#temporals.format(transaction.getDate(), 'dd-MM-yyyy - HH:mm')}"></span>  -->
+                    <!--                    <span th:text="${#temporals.format(transaction.getDate(), 'dd-MM-yyyy - HH:mm')}"></span>  -->
                 </td>
             </tr>
             </tbody>
@@ -164,5 +170,8 @@
 
 </div>
 
+
 </body>
 </html>
+
+

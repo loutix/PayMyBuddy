@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Controller
@@ -40,7 +41,7 @@ public class BankController {
 
     @GetMapping("/my-account-statement")
     public String getMyBankAccount(Model model, @AuthenticationPrincipal UserDetails userDetails) {
-        Integer balance = bankService.getBankAmount(userDetails);
+        BigDecimal balance = bankService.getBankAmount(userDetails);
         model.addAttribute("bankAmount", balance);
 
         DepositDto depositDto = new DepositDto();
@@ -63,7 +64,8 @@ public class BankController {
         BankAccount bankAccount = bankService.creditDeposit(userDetails, depositDto);
 
         //register credit
-        transactionService.saveTransaction(new TransferDtoSave(bankAccount, bankAccount, depositDto.getCredit(), "Credit from bankFlow", depositDto.getDate()));
+        //todo ici modifier
+        //  transactionService.saveTransaction(new TransferDtoSave(bankAccount, bankAccount, depositDto.getCredit(), Fare.TRANSACTION_DEPOSIT,"Credit from bankFlow", depositDto.getDate()));
 
 
         model.addAttribute("bankAmount", bankAccount.getBalance());
@@ -93,9 +95,9 @@ public class BankController {
     public String transferSave(@Valid @ModelAttribute("transferDto") TransferDto transferDto,
                                @AuthenticationPrincipal UserDetails userDetails) {
 
-        Integer balance = bankService.getBankAccount(userDetails).getBalance();
+        BigDecimal balance = bankService.getBankAccount(userDetails).getBalanceRounded();
 
-        if (balance < transferDto.getAmount()) {
+        if (!bankService.controlBalance(transferDto.getAmount(), balance)) {
             return "redirect:/transfer?error";
         }
 

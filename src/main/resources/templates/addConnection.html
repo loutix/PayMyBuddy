@@ -9,7 +9,7 @@
     <!--table friend list-->
     <div class="container mt-5">
         <div class="row">
-            <h4>La liste de mes amis</h4>
+            <h4>My friends list</h4>
             <table class="table table-hover">
                 <thead>
                 <tr class="table-primary">
@@ -24,7 +24,7 @@
 
                 <tr th:if="${friendList.isEmpty()}">
                     <td colspan="5">
-                        <div class="text-center my-3">Aucune relation pour le moment ...</div>
+                        <div class="text-center my-3">No relationship yet..</div>
                     </td>
                 </tr>
 
@@ -34,10 +34,8 @@
                     <td><span th:text="${friend.lastName}"></span></td>
                     <td><span th:text="${friend.email}"></span></td>
                     <td>
-                        <a th:href="@{'/delete-friend/' + ${friend.id}}" class="btn btn-danger">Supprimer</a>
+                        <a th:href="@{'/delete-friend/' + ${friend.id}}" class="btn btn-danger">Delete Friend</a>
                     </td>
-                    <!-- Cellule vide si le bouton n'est pas présent -->
-
                 </tr>
                 </tbody>
             </table>
@@ -48,7 +46,7 @@
 
     <div class="container mt-5">
         <div class="row">
-            <h4>La liste des utilisateurs</h4>
+            <h4>The users list</h4>
             <table class="table table-hover">
                 <thead>
                 <tr class="table-primary">
@@ -63,7 +61,7 @@
 
                 <tr th:if="${userList.isEmpty()}">
                     <td colspan="5">
-                        <div class="text-center my-3">Aucun utilisateur à ajouter</div>
+                        <div class="text-center my-3">No users to add</div>
                     </td>
                 </tr>
 
@@ -73,7 +71,7 @@
                     <td><span th:text="${user.lastName}"></span></td>
                     <td><span th:text="${user.email}"></span></td>
                     <td>
-                        <a th:href="@{'/add-friend/' + ${user.id}}" class="btn btn-success">Ajouter</a>
+                        <a th:href="@{'/add-friend/' + ${user.id}}" class="btn btn-success">Add Friend</a>
                     </td>
 
                 </tr>
