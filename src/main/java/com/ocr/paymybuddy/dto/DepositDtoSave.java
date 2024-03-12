@@ -2,8 +2,6 @@ package com.ocr.paymybuddy.dto;
 
 import com.ocr.paymybuddy.model.BankAccount;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -12,24 +10,17 @@ import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
-public class TransferDtoSave {
-    @NotEmpty
-    private BankAccount bankOrigin;
+public class DepositDtoSave {
 
     @NotEmpty
-    private BankAccount bankTarget;
+    private BankAccount bankAccount;
 
-    @NotNull
-    @PositiveOrZero
+    @NotEmpty
     private BigDecimal amount;
 
-    @NotEmpty
-    private BigDecimal fees;
+    private final String description = "Credit deposit";
 
     @NotEmpty
-    private String description;
-
     private LocalDateTime date;
-
 
 }

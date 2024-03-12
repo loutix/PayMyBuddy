@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        lang="en"
+        layout:decorate="layout/main">
+<body>
+<div layout:fragment="content">
+
+    <section>
+        <div th:if="${param.error}">
+            <div class="alert alert-danger text-center alert-dismissible fade show" role="alert">
+                Insufficient bank funds, please credit your account and retry
+                <a th:href="@{/my-account-statement}">Here</a>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+        </div>
+        <div th:if="${param.success}">
+            <div class="alert alert-info text-center alert-dismissible fade show" role="alert">
+                <strong>The cash out operation was made with success !</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+        <div th:if="${param.successIban}">
+            <div class="alert alert-info text-center alert-dismissible fade show" role="alert">
+                <strong>IBAN saved with success !</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    </section>
+
+    <div class="card">
+        <h5 class="card-header text-center text-uppercase">Cash Out</h5>
+        <div class="card-body px-4 text-center">
+
+            <div class="col-md-12 my-4">
+                <h6> Value available on the application :
+                    <strong th:text="${cashOutRequestDto.getBalance() >= 0 ? '+' : '-'} + ${cashOutRequestDto.getBalance()} + ' Euros'"
+                            th:class="${cashOutRequestDto.getBalance() >= 0 ? 'text-success' : 'text-danger'}">
+                    </strong>
+                </h6>
+            </div>
+
+
+            <section th:if="${cashOutRequestDto.iban != null and not #strings.isEmpty(cashOutRequestDto.iban)}">
+
+                <div class="col-md-12 my-4">
+                    <h6> IBAN saved :
+                        <strong th:text="${cashOutRequestDto.getIban()}"></strong>
+                        <a th:href="@{'/cash-out/iban/delete'}" class="btn btn-outline-danger btn-sm ms-3">Delete</a>
+                    </h6>
+                </div>
+
+                <form class="row g-3 mb-3"
+                      method="post"
+                      role="form"
+                      th:action="@{/cash-out/save}"
+                      th:object="${cashOutTransferRequestDto}">
+
+                    <div class="col-md-6 offset-md-3 ">
+                        <input style="text-align:center;"
+                               id="debit"
+                               class="form-control"
+                               name="debit"
+                               type="number"
+                               step="0"
+                               min="1" max="10000"
+                               th:field="*{debit}"
+                               placeholder="Cash out my money"
+                               oninput="calculateFees(this.value)"
+                               required>
+
+                        <div id="fees" class="text-center pt-1">
+                        </div>
+
+                        <div th:if="${#fields.hasErrors('debit')}" class="text-danger">
+                            <p th:errors="*{debit}" class="error"></p>
+                        </div>
+                    </div>
+                    <span> <i>Debit between 1€ and 10 000€</i></span>
+                    <div class="col-md-12 mt-4">
+                        <button type="submit" class="btn btn-primary ">Confirm cash-out</button>
+                    </div>
+                </form>
+            </section>
+
+            <div th:if="${ibanError}" class="text-danger">
+                <p th:text="${ibanError}" class="error"></p>
+            </div>
+
+            <section th:unless="${cashOutRequestDto.iban != null and not #strings.isEmpty(cashOutRequestDto.iban)}">
+                <!-- Message si IBAN est null ou vide -->
+                <div class="custom-alert alert alert-warning my-4" role="alert">
+                    Please Insert IBAN
+                    example : FR12345678901234567890123456
+                </div>
+
+                <form class="row g-3 mb-3"
+                      method="post"
+                      role="form"
+                      th:action="@{/cash-out/iban/save}"
+                      th:object="${ibanRequestDto}">
+
+                    <div class="col-md-6 offset-md-3">
+                        <input style="text-align:center;"
+                               class="form-control"
+                               id="iban"
+                               name="iban"
+                               placeholder="Insert Iban"
+                               th:field="*{iban}"
+                               type="text"
+                               pattern="^FR[0-9A-Z]{26,32}$" title="The IBAN format is invalid"
+                               required>
+
+
+                        <div th:if="${#fields.hasErrors('iban')}" class="text-danger">
+                            <p th:errors="*{iban}" class="error"></p>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary mt-3">Confirm cash-out</button>
+                    </div>
+
+
+                </form>
+            </section>
+
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

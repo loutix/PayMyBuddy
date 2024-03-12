@@ -14,7 +14,7 @@ public class TransferDto {
 
     @NotNull
     @Range(min = 1, max = 10000)
-    private Double amount;
+    private BigDecimal amount;
 
     @NotNull
     @Size(min = 3, max = 50)
@@ -25,7 +25,7 @@ public class TransferDto {
 
     private LocalDateTime date = LocalDateTime.now();
 
-    public BigDecimal getAmountRounded() {
-        return BigDecimal.valueOf(this.amount);
-    }
+//    public BigDecimal getAmountRounded() {
+////        return BigDecimal.valueOf(this.amount);
+////    }
 }

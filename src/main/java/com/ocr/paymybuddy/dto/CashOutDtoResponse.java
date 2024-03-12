@@ -10,26 +10,23 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+
 @Data
 @AllArgsConstructor
-public class TransferDtoSave {
-    @NotEmpty
-    private BankAccount bankOrigin;
+public class CashOutDtoResponse {
 
     @NotEmpty
-    private BankAccount bankTarget;
+    private BankAccount bankAccount;
 
     @NotNull
     @PositiveOrZero
     private BigDecimal amount;
 
     @NotEmpty
-    private BigDecimal fees;
+    public BigDecimal fees;
 
     @NotEmpty
-    private String description;
+    private final String description = "Cash out to IBAN";
 
     private LocalDateTime date;
-
-
 }

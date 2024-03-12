@@ -16,7 +16,7 @@
     </section>
 
     <div class="card">
-        <h5 class="card-header">Bank account situation</h5>
+        <h5 class="card-header text-center text-uppercase">deposit</h5>
         <div class="card-body px-4 text-center">
 
             <div class="col-md-12 my-4">
@@ -30,7 +30,7 @@
                   method="post"
                   role="form"
                   th:action="@{/my-account-statement/save}"
-                  th:object="${depositDto}">
+                  th:object="${depositRequestDto}">
 
                 <div class="col-md-6 offset-md-3 ">
                     <input style="text-align:center;"
@@ -45,7 +45,7 @@
                            required>
 
 
-                    <div th:if="${#fields.hasErrors('credit')}" class="text-danger">
+                    <div th:if="${#fields.hasErrors('credit')}"  class="text-danger">
                         <p th:errors="*{credit}" class="error"></p>
                     </div>
                 </div>

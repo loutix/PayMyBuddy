@@ -1,4 +1,3 @@
-
 DELETE
 FROM friendships;
 DELETE
@@ -35,15 +34,16 @@ CREATE TABLE bank_accounts
     id      INT AUTO_INCREMENT PRIMARY KEY,
     balance DECIMAL(10, 2) DEFAULT 0.00,
     user_id INT,
+    iban    VARCHAR(50),
     CONSTRAINT fk_user_bank_account FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
 
-INSERT INTO bank_accounts (balance, user_id)
-VALUES (100, 1),
-       (200, 2),
-       (300, 3),
-       (400, 4);
+INSERT INTO bank_accounts (balance, user_id, iban)
+VALUES (100, 1, "FR12345678901234567890123456"),
+       (200, 2, "FRABCDEF1234567890123456789"),
+       (300, 3, "FRABCDEF1234567890123456789"),
+       (400, 4, "FR12345678901234567890123456");
 
 
 CREATE TABLE friendships
@@ -68,7 +68,7 @@ CREATE TABLE transactions
     amount           DECIMAL(10, 2) DEFAULT 0.00,
     description      VARCHAR(50),
     transaction_type VARCHAR(25),
-    date             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date             TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     bank_account_id  INT,
     friend_bank_id   INT,
     CONSTRAINT fk_bank_account_transaction FOREIGN KEY (bank_account_id) REFERENCES bank_accounts (id)
@@ -76,7 +76,7 @@ CREATE TABLE transactions
 
 
 INSERT INTO transactions (amount, description, transaction_type, bank_account_id, friend_bank_id, date)
-VALUES (100, "cadeau de noël", "DEBIT", 1, 4,  DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 124 MINUTE )),
-       (100, "cadeau de noël", "CREDIT", 4, 1, DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 124 MINUTE )),
+VALUES (100, "cadeau de noël", "DEBIT", 1, 4, DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 124 MINUTE)),
+       (100, "cadeau de noël", "CREDIT", 4, 1, DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 124 MINUTE)),
        (200, "repas", "DEBIT", 4, 2, DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 3625 MINUTE)),
-       (200, "repas","CREDIT", 2, 4,  DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 3625 MINUTE));
+       (200, "repas", "CREDIT", 2, 4, DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 3625 MINUTE));

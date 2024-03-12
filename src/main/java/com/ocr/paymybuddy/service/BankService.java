@@ -2,29 +2,25 @@ package com.ocr.paymybuddy.service;
 
 
 import com.ocr.paymybuddy.constants.Fare;
-import com.ocr.paymybuddy.dto.DepositDto;
-import com.ocr.paymybuddy.dto.TransferDto;
-import com.ocr.paymybuddy.dto.TransferDtoSave;
+import com.ocr.paymybuddy.dto.*;
 import com.ocr.paymybuddy.model.BankAccount;
 import com.ocr.paymybuddy.model.UserCustom;
 import com.ocr.paymybuddy.repository.BankAccountRepository;
-import com.ocr.paymybuddy.repository.UserRepository;
-import org.springframework.security.core.userdetails.UserDetails;
+import jakarta.validation.Valid;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.security.Principal;
 
 @Service
 
 public class BankService {
     private final BankAccountRepository bankAccountRepository;
-    private final UserRepository userRepository;
 
-    public BankService(BankAccountRepository bankAccountRepository, UserRepository userRepository) {
+    public BankService(BankAccountRepository bankAccountRepository) {
         this.bankAccountRepository = bankAccountRepository;
-        this.userRepository = userRepository;
     }
 
     /**
@@ -41,26 +37,15 @@ public class BankService {
 
 
     /**
-     * Get the balance bank account
-     *
-     * @param userDetails userDetails
-     * @return integer
-     */
-    public BigDecimal getBankAmount(UserDetails userDetails) {
-        UserCustom userCustom = userRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        return userCustom.getBankAccount().getBalanceRounded();
-    }
-
-    /**
      * User credits their own bank account
      *
-     * @param userDetails userDetails
-     * @param depositDto  depositDto
+     * @param principal          principal
+     * @param depositResponseDto depositResponseDto
      * @return BankAccount
      */
-    public BankAccount creditDeposit(UserDetails userDetails, DepositDto depositDto) {
-        BankAccount bankAccount = bankAccountRepository.findByUserCustomEmail(userDetails.getUsername()).orElseThrow(() -> new UsernameNotFoundException("Bank account not found"));
-        bankAccount.setBalance(bankAccount.getBalance().add(depositDto.getCredit()));
+    public BankAccount creditDeposit(Principal principal, @Valid DepositRequestDto depositResponseDto) {
+        BankAccount bankAccount = this.getBankAccount(principal);
+        bankAccount.setBalance(bankAccount.getBalance().add(depositResponseDto.getCredit()));
         bankAccountRepository.save(bankAccount);
         return bankAccount;
     }
@@ -73,16 +58,12 @@ public class BankService {
      * @param balance balance
      * @return boolean
      */
-    public Boolean controlBalance(Double amount, BigDecimal balance) {
-
-        //Convert Dto to BigDecimal
-        BigDecimal amountBigDecimal = BigDecimal.valueOf(amount);
+    public Boolean controlBalance(BigDecimal amount, BigDecimal balance) {
 
         //Calculate fees
-        BigDecimal fees = calculateTransactionFees(amountBigDecimal);
-
+        BigDecimal fees = calculateTransactionFees(amount);
         //Total
-        BigDecimal amountWithFees = amountBigDecimal.add(fees);
+        BigDecimal amountWithFees = amount.add(fees);
 
         return balance.compareTo(amountWithFees) > 0;
     }
@@ -100,15 +81,15 @@ public class BankService {
     /**
      * User make a money transfer to a friend
      *
-     * @param userDetails userDetails
+     * @param principal   principal
      * @param transferDto transferDto
      * @return TransferDtoSave
      */
-    public TransferDtoSave transferToFriend(UserDetails userDetails, TransferDto transferDto) {
-        BankAccount bankAccountDebit = getBankAccount(userDetails);
+    public TransferDtoSave transferToFriend(Principal principal, TransferDto transferDto) {
+        BankAccount bankAccountDebit = getBankAccount(principal);
         BankAccount bankAccountCredit = bankAccountRepository.findByUserCustomEmail(transferDto.getUserCustom().getEmail()).orElseThrow(() -> new UsernameNotFoundException("Bank account not found"));
 
-        BigDecimal amount = transferDto.getAmountRounded();
+        BigDecimal amount = transferDto.getAmount();
         BigDecimal fees = calculateTransactionFees(amount);
 
         // debit the debtor
@@ -116,7 +97,21 @@ public class BankService {
         // credit the creditor
         creditAccount(bankAccountCredit, amount);
 
-        return new TransferDtoSave(bankAccountDebit, bankAccountCredit,amount, fees, transferDto.getDescription(), transferDto.getDate());
+        return new TransferDtoSave(bankAccountDebit, bankAccountCredit, amount, fees, transferDto.getDescription(), transferDto.getDate());
+    }
+
+
+    public CashOutDtoResponse transferToIban(Principal principal, @Valid CashOutTransferRequestDto cashOutTransferRequestDto) {
+
+        BankAccount bankAccountDebit = getBankAccount(principal);
+
+        BigDecimal amount = cashOutTransferRequestDto.getDebit();
+        BigDecimal fees = calculateTransactionFees(amount);
+
+        // debit the debtor
+        debitAccount(bankAccountDebit, amount);
+
+        return new CashOutDtoResponse(bankAccountDebit, amount, fees, cashOutTransferRequestDto.getDate());
     }
 
 
@@ -144,9 +139,43 @@ public class BankService {
         bankAccountRepository.save(bankAccount);
     }
 
-    public BankAccount getBankAccount(UserDetails userDetails) {
-        return bankAccountRepository.findByUserCustomEmail(userDetails.getUsername()).orElseThrow(() -> new UsernameNotFoundException("Bank account not found"));
+    public BankAccount getBankAccount(Principal principal) {
+        return bankAccountRepository.findByUserCustomEmail(principal.getName()).orElseThrow(() -> new UsernameNotFoundException("Bank account not found"));
     }
 
 
+    public CashOutRequestDto getCashOut(Principal principal) {
+
+        BankAccount bankAccount = this.getBankAccount(principal);
+
+        return new CashOutRequestDto(
+                bankAccount.getBalance(),
+                bankAccount.getIban()
+        );
+    }
+
+    /**
+     * Save user Iban
+     *
+     * @param principal      principal
+     * @param ibanRequestDto ibanRequestDto
+     */
+    public void saveIban(Principal principal, IbanRequestDto ibanRequestDto) {
+        BankAccount bankAccount = this.getBankAccount(principal);
+        bankAccount.setIban(ibanRequestDto.getIban());
+        bankAccountRepository.save(bankAccount);
+    }
+
+    /**
+     * Delete the user Iban
+     *
+     * @param principal principal
+     */
+
+    public void deleteIban(Principal principal) {
+        BankAccount bankAccount = this.getBankAccount(principal);
+        bankAccount.setIban(null);
+        bankAccountRepository.save(bankAccount);
+
+    }
 }

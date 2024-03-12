@@ -6,11 +6,11 @@ import com.ocr.paymybuddy.model.UserCustom;
 import com.ocr.paymybuddy.repository.UserRepository;
 import com.ocr.paymybuddy.utilities.AuthUtils;
 import jakarta.validation.ValidationException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.List;
 
 @Service
@@ -66,24 +66,24 @@ public class UserService {
     /**
      * Get all userCustoms from user friendships
      *
-     * @param userDetails userDetails
+     * @param principal userDetails
      * @return List<UserCustom>
      */
-    public List<UserCustom> getAuthFriendShip(UserDetails userDetails) {
-        UserCustom userCustom = userRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public List<UserCustom> getAuthFriendShip(Principal principal) {
+        UserCustom userCustom = userRepository.findByEmail(principal.getName()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         return userCustom.getFriendShipList().stream().map(FriendShip::getFriend).toList();
     }
 
     /**
      * Get all users except user friendship
      *
-     * @param userDetails userDetails
+     * @param principal principal
      * @return List<UserCustom>
      */
-    public List<UserCustom> getAuthNotFriendShip(UserDetails userDetails) {
+    public List<UserCustom> getAuthNotFriendShip(Principal principal) {
 
         List<UserCustom> allUsers = this.findAllUsers();
-        List<UserCustom> friendList = this.getAuthFriendShip(userDetails);
+        List<UserCustom> friendList = this.getAuthFriendShip(principal);
 
         return allUsers.stream()
                 .filter(customUser -> !friendList.contains(customUser))

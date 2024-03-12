@@ -24,9 +24,13 @@ public class BankAccount {
     @Column(nullable = false, columnDefinition = "DECIMAL(10, 2) DEFAULT 0.00")
     private BigDecimal balance = BigDecimal.ZERO;
 
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", nullable = false)
     private UserCustom userCustom;
+
+    @Column(nullable = true)
+    private String iban;
 
     @OneToMany(
             mappedBy = "bankAccount",

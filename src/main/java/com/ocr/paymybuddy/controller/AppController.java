@@ -2,13 +2,12 @@ package com.ocr.paymybuddy.controller;
 
 import com.ocr.paymybuddy.model.UserCustom;
 import com.ocr.paymybuddy.service.UserService;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.security.Principal;
 import java.util.List;
 
 @Controller
@@ -23,10 +22,10 @@ public class AppController {
 
 
     @GetMapping("/add-connection")
-    public String addConnection(Model model, @AuthenticationPrincipal UserDetails userDetails) {
+    public String addConnection(Model model, Principal principal) {
 
-        List<UserCustom> friendList = userService.getAuthFriendShip(userDetails);
-        List<UserCustom> userList = userService.getAuthNotFriendShip(userDetails);
+        List<UserCustom> friendList = userService.getAuthFriendShip(principal);
+        List<UserCustom> userList = userService.getAuthNotFriendShip(principal);
 
         model.addAttribute("friendList", friendList);
         model.addAttribute("userList", userList);
@@ -57,9 +56,6 @@ public class AppController {
     public String HomePage() {
         return "redirect:/home";
     }
-
-
-
 
 
 }
