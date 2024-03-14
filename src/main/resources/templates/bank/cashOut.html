@@ -63,8 +63,10 @@
                                class="form-control"
                                name="debit"
                                type="number"
-                               step="0"
-                               min="1" max="10000"
+                               step='0.01'
+                               value='0.00'
+                               min="1"
+                               max="10000"
                                th:field="*{debit}"
                                placeholder="Cash out my money"
                                oninput="calculateFees(this.value)"
