@@ -17,7 +17,6 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
     private final AuthUtils authUtils;
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthUtils authUtils) {
