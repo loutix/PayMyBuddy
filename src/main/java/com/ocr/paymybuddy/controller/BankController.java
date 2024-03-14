@@ -6,7 +6,7 @@ import com.ocr.paymybuddy.model.Transaction;
 import com.ocr.paymybuddy.model.UserCustom;
 import com.ocr.paymybuddy.service.BankServiceImpl;
 import com.ocr.paymybuddy.service.TransactionServiceImpl;
-import com.ocr.paymybuddy.service.UserService;
+import com.ocr.paymybuddy.service.UserServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -24,13 +24,13 @@ import java.util.List;
 public class BankController {
 
     private final BankServiceImpl bankServiceImpl;
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
     private final TransactionServiceImpl transactionServiceImpl;
 
 
-    public BankController(BankServiceImpl bankServiceImpl, UserService userService, TransactionServiceImpl transactionServiceImpl) {
+    public BankController(BankServiceImpl bankServiceImpl, UserServiceImpl userServiceImpl, TransactionServiceImpl transactionServiceImpl) {
         this.bankServiceImpl = bankServiceImpl;
-        this.userService = userService;
+        this.userServiceImpl = userServiceImpl;
         this.transactionServiceImpl = transactionServiceImpl;
 
     }
@@ -159,7 +159,7 @@ public class BankController {
         TransferDto transferDto = new TransferDto();
         model.addAttribute("transferDto", transferDto);
 
-        List<UserCustom> friendList = userService.getAuthFriendShip();
+        List<UserCustom> friendList = userServiceImpl.getAuthFriendShip();
         model.addAttribute("friendList", friendList);
 
         BankAccount bankAccount = bankServiceImpl.getBankAccount();

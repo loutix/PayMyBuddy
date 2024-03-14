@@ -4,7 +4,7 @@ import com.ocr.paymybuddy.dto.RegisterDto;
 import com.ocr.paymybuddy.model.UserCustom;
 import com.ocr.paymybuddy.repository.UserRepository;
 import com.ocr.paymybuddy.service.BankServiceImpl;
-import com.ocr.paymybuddy.service.UserService;
+import com.ocr.paymybuddy.service.UserServiceImpl;
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
 import org.springframework.stereotype.Controller;
@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
 public class AuthController {
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
     private final BankServiceImpl bankServiceImpl;
 
     private final UserRepository  userRepository;
 
-    public AuthController(UserService userService, BankServiceImpl bankServiceImpl, UserRepository userRepository) {
-        this.userService = userService;
+    public AuthController(UserServiceImpl userServiceImpl, BankServiceImpl bankServiceImpl, UserRepository userRepository) {
+        this.userServiceImpl = userServiceImpl;
         this.bankServiceImpl = bankServiceImpl;
         this.userRepository = userRepository;
     }
@@ -54,7 +54,7 @@ public class AuthController {
 
 
         try {
-            UserCustom newUser = userService.saveUser(registerDto);
+            UserCustom newUser = userServiceImpl.saveUser(registerDto);
             bankServiceImpl.saveBankAccount(newUser);
             return "redirect:/login?success";
         } catch (ValidationException e) {

@@ -1,6 +1,7 @@
 package com.ocr.paymybuddy.service;
 
 import com.ocr.paymybuddy.dto.RegisterDto;
+import com.ocr.paymybuddy.interfaces.UserService;
 import com.ocr.paymybuddy.model.FriendShip;
 import com.ocr.paymybuddy.model.UserCustom;
 import com.ocr.paymybuddy.repository.UserRepository;
@@ -13,13 +14,13 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class UserService {
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthUtils authUtils;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthUtils authUtils) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthUtils authUtils) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authUtils = authUtils;
@@ -31,6 +32,7 @@ public class UserService {
      * @param registerDto registerDto
      * @return UserCustom
      */
+    @Override
     public UserCustom saveUser(RegisterDto registerDto) {
 
         if (userRepository.existsByEmail(registerDto.getEmail())) {
@@ -54,6 +56,7 @@ public class UserService {
      *
      * @return List<UserCustom>
      */
+    @Override
     public List<UserCustom> findAllUsers() {
 
         String currentEmail = authUtils.getCurrentUserEmail();
@@ -69,6 +72,7 @@ public class UserService {
      *
      * @return List<UserCustom>
      */
+    @Override
     public List<UserCustom> getAuthFriendShip() {
         String currentEmail = authUtils.getCurrentUserEmail();
         UserCustom userCustom = userRepository.findByEmail(currentEmail).orElseThrow(() -> new UsernameNotFoundException("User not found"));
@@ -80,6 +84,7 @@ public class UserService {
      *
      * @return List<UserCustom>
      */
+    @Override
     public List<UserCustom> getAuthNotFriendShip() {
 
         List<UserCustom> allUsers = this.findAllUsers();
@@ -96,6 +101,7 @@ public class UserService {
      *
      * @param id id
      */
+    @Override
     public void addFriendShip(Integer id) {
         String currentEmail = authUtils.getCurrentUserEmail();
         UserCustom userCustom = userRepository.findByEmail(currentEmail).orElseThrow(() -> new UsernameNotFoundException("User not found"));
@@ -110,6 +116,7 @@ public class UserService {
      *
      * @param id id
      */
+    @Override
     public void deleteFriendShip(Integer id) {
         String currentEmail = authUtils.getCurrentUserEmail();
         UserCustom userCustom = userRepository.findByEmail(currentEmail).orElseThrow(() -> new UsernameNotFoundException("User not found"));

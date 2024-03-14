@@ -1,7 +1,7 @@
 package com.ocr.paymybuddy.controller;
 
 import com.ocr.paymybuddy.model.UserCustom;
-import com.ocr.paymybuddy.service.UserService;
+import com.ocr.paymybuddy.service.UserServiceImpl;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,18 +13,18 @@ import java.util.List;
 public class AppController {
 
 
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
 
-    public AppController(UserService userService) {
-        this.userService = userService;
+    public AppController(UserServiceImpl userServiceImpl) {
+        this.userServiceImpl = userServiceImpl;
     }
 
 
     @GetMapping("/add-connection")
     public String addConnection(Model model) {
 
-        List<UserCustom> friendList = userService.getAuthFriendShip();
-        List<UserCustom> userList = userService.getAuthNotFriendShip();
+        List<UserCustom> friendList = userServiceImpl.getAuthFriendShip();
+        List<UserCustom> userList = userServiceImpl.getAuthNotFriendShip();
 
         model.addAttribute("friendList", friendList);
         model.addAttribute("userList", userList);
@@ -34,13 +34,13 @@ public class AppController {
 
     @GetMapping("/add-friend/{id}")
     public String AddFriendShip(@PathVariable(value = "id") Integer id) {
-        this.userService.addFriendShip(id);
+        this.userServiceImpl.addFriendShip(id);
         return "redirect:/add-connection";
     }
 
     @GetMapping("/delete-friend/{id}")
     public String DeleteFriendShip(@PathVariable(value = "id") Integer id) {
-        this.userService.deleteFriendShip(id);
+        this.userServiceImpl.deleteFriendShip(id);
         return "redirect:/add-connection";
     }
 
