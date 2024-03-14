@@ -96,6 +96,11 @@
                            th:field="*{description}"
                            placeholder="Description"
                            required>
+
+                    <div th:if="${#fields.hasErrors('description')}" class="text-danger">
+                        <p th:errors="*{description}" class="error"></p>
+                    </div>
+
                 </div>
 
                 <div class="col-3 text-center">

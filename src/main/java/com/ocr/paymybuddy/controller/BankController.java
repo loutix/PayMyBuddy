@@ -93,7 +93,6 @@ public class BankController {
 
     }
 
-
     @PostMapping("/cash-out/save")
     public String saveCashOut(@Valid @ModelAttribute("cashOutTransferRequestDto") CashOutTransferRequestDto cashOutTransferRequestDto,
                               BindingResult result) {
@@ -171,7 +170,12 @@ public class BankController {
     }
 
     @PostMapping("/transfer/save")
-    public String transferSave(@Valid @ModelAttribute("transferDto") TransferDto transferDto) {
+    public String transferSave(@Valid @ModelAttribute("transferDto") TransferDto transferDto, BindingResult result, Model model) {
+
+        if (result.hasErrors()) {
+            model.addAttribute("transferDto", transferDto);
+            return "bank/cashOut";
+        }
 
         BigDecimal balance = bankServiceImpl.getBankAccount().getBalanceRounded();
 
