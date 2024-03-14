@@ -7,7 +7,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import java.security.Principal;
 import java.util.List;
 
 @Controller
@@ -22,10 +21,10 @@ public class AppController {
 
 
     @GetMapping("/add-connection")
-    public String addConnection(Model model, Principal principal) {
+    public String addConnection(Model model) {
 
-        List<UserCustom> friendList = userService.getAuthFriendShip(principal);
-        List<UserCustom> userList = userService.getAuthNotFriendShip(principal);
+        List<UserCustom> friendList = userService.getAuthFriendShip();
+        List<UserCustom> userList = userService.getAuthNotFriendShip();
 
         model.addAttribute("friendList", friendList);
         model.addAttribute("userList", userList);

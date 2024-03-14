@@ -4,8 +4,8 @@ import com.ocr.paymybuddy.dto.*;
 import com.ocr.paymybuddy.model.BankAccount;
 import com.ocr.paymybuddy.model.Transaction;
 import com.ocr.paymybuddy.model.UserCustom;
-import com.ocr.paymybuddy.service.BankService;
-import com.ocr.paymybuddy.service.TransactionService;
+import com.ocr.paymybuddy.service.BankServiceImpl;
+import com.ocr.paymybuddy.service.TransactionServiceImpl;
 import com.ocr.paymybuddy.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -18,28 +18,27 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
-import java.security.Principal;
 import java.util.List;
 
 @Controller
 public class BankController {
 
-    private final BankService bankService;
+    private final BankServiceImpl bankServiceImpl;
     private final UserService userService;
-    private final TransactionService transactionService;
+    private final TransactionServiceImpl transactionServiceImpl;
 
 
-    public BankController(BankService bankService, UserService userService, TransactionService transactionService) {
-        this.bankService = bankService;
+    public BankController(BankServiceImpl bankServiceImpl, UserService userService, TransactionServiceImpl transactionServiceImpl) {
+        this.bankServiceImpl = bankServiceImpl;
         this.userService = userService;
-        this.transactionService = transactionService;
+        this.transactionServiceImpl = transactionServiceImpl;
 
     }
 
-    @GetMapping("/my-account-statement")
-    public String getMyBankAccount(Model model, Principal principal) {
+    @GetMapping("/deposit")
+    public String getMyBankAccount(Model model) {
 
-        BigDecimal balance = bankService.getBankAccount(principal).getBalance();
+        BigDecimal balance = bankServiceImpl.getBankAccount().getBalance();
 
         DepositResponseDto depositResponseDto = new DepositResponseDto(balance);
         model.addAttribute("bankAmount", depositResponseDto.getBalance());
@@ -47,37 +46,37 @@ public class BankController {
         DepositRequestDto depositRequestDto = new DepositRequestDto();
         model.addAttribute("depositRequestDto", depositRequestDto);
 
-        return "bank/accountStatement";
+        return "bank/deposit";
     }
 
-    @PostMapping("/my-account-statement/save")
+    @PostMapping("/deposit/save")
     public String registration(@Valid @ModelAttribute("depositRequestDto") DepositRequestDto depositRequestDto,
                                BindingResult result,
-                               Model model,
-                               Principal principal) {
+                               Model model
+    ) {
 
         if (result.hasErrors()) {
-            return "bank/accountStatement";
+            return "bank/deposit";
         }
 
-        BankAccount bankAccount = bankService.creditDeposit(principal, depositRequestDto);
+        BankAccount bankAccount = bankServiceImpl.creditDeposit(depositRequestDto);
         DepositResponseDto depositResponseDto = new DepositResponseDto(bankAccount.getBalance());
         model.addAttribute("bankAccount", depositResponseDto);
 
         //register credit
         DepositDtoSave depositDtoSave = new DepositDtoSave(bankAccount, depositRequestDto.getCredit(), depositRequestDto.getDate());
-        transactionService.saveDeposit(depositDtoSave);
+        transactionServiceImpl.saveDeposit(depositDtoSave);
 
 
-        return "redirect:/my-account-statement?success";
+        return "redirect:/deposit?success";
     }
 
 
     /*  Cash out routes    */
     @GetMapping("/cash-out")
-    public String getCashOut(Model model, Principal principal) {
+    public String getCashOut(Model model) {
 
-        CashOutRequestDto cashOutRequestDto = bankService.getCashOut(principal);
+        CashOutRequestDto cashOutRequestDto = bankServiceImpl.getCashOut();
 
         // balance + Iban
         model.addAttribute("cashOutRequestDto", cashOutRequestDto);
@@ -97,22 +96,20 @@ public class BankController {
 
     @PostMapping("/cash-out/save")
     public String saveCashOut(@Valid @ModelAttribute("cashOutTransferRequestDto") CashOutTransferRequestDto cashOutTransferRequestDto,
-                              BindingResult result,
-                              Principal principal) {
-
+                              BindingResult result) {
 
         if (result.hasErrors()) {
             return "bank/cashOut";
         }
 
-        BigDecimal balance = bankService.getBankAccount(principal).getBalance();
+        BigDecimal balance = bankServiceImpl.getBankAccount().getBalance();
 
-        if (!bankService.controlBalance(cashOutTransferRequestDto.getDebit(), balance)) {
+        if (!bankServiceImpl.controlBalance(cashOutTransferRequestDto.getDebit(), balance)) {
             return "redirect:/cash-out?error";
         }
 
-        CashOutDtoResponse cashOutDtoResponse = bankService.transferToIban(principal, cashOutTransferRequestDto);
-        transactionService.saveCashOut(cashOutDtoResponse);
+        CashOutDtoResponse cashOutDtoResponse = bankServiceImpl.transferToIban(cashOutTransferRequestDto);
+        transactionServiceImpl.saveCashOut(cashOutDtoResponse);
 
 
         return "redirect:/cash-out?success";
@@ -122,10 +119,9 @@ public class BankController {
     @PostMapping("/cash-out/iban/save")
     public String saveCashOutIban(@Valid @ModelAttribute("ibanRequestDto") IbanRequestDto ibanRequestDto,
                                   BindingResult result,
-                                  Model model,
-                                  Principal principal) {
+                                  Model model) {
 
-        CashOutRequestDto cashOutRequestDto = bankService.getCashOut(principal);
+        CashOutRequestDto cashOutRequestDto = bankServiceImpl.getCashOut();
 
 
         if (result.hasErrors()) {
@@ -144,30 +140,30 @@ public class BankController {
             return "bank/cashOut";
         }
 
-        bankService.saveIban(principal, ibanRequestDto);
+        bankServiceImpl.saveIban(ibanRequestDto);
 
         return "redirect:/cash-out?successIban";
     }
 
 
     @GetMapping("/cash-out/iban/delete")
-    public String DeleteIban(Principal principal, Model model) {
-        bankService.deleteIban(principal);
-        return this.getCashOut(model, principal);
+    public String DeleteIban(Model model) {
+        bankServiceImpl.deleteIban();
+        return this.getCashOut(model);
     }
 
 
     @GetMapping("/transfer")
-    public String transfer(Model model, Principal principal, @RequestParam(defaultValue = "0") int page) {
+    public String transfer(Model model, @RequestParam(defaultValue = "0") int page) {
 
         TransferDto transferDto = new TransferDto();
         model.addAttribute("transferDto", transferDto);
 
-        List<UserCustom> friendList = userService.getAuthFriendShip(principal);
+        List<UserCustom> friendList = userService.getAuthFriendShip();
         model.addAttribute("friendList", friendList);
 
-        BankAccount bankAccount = bankService.getBankAccount(principal);
-        Page<Transaction> transactionList = transactionService.getTransactionsByBankAccount(bankAccount, page);
+        BankAccount bankAccount = bankServiceImpl.getBankAccount();
+        Page<Transaction> transactionList = transactionServiceImpl.getTransactionsByBankAccount(bankAccount, page);
         model.addAttribute("transactionList", transactionList);
         model.addAttribute("currentPage", page);
 
@@ -175,17 +171,17 @@ public class BankController {
     }
 
     @PostMapping("/transfer/save")
-    public String transferSave(@Valid @ModelAttribute("transferDto") TransferDto transferDto, Principal principal) {
+    public String transferSave(@Valid @ModelAttribute("transferDto") TransferDto transferDto) {
 
-        BigDecimal balance = bankService.getBankAccount(principal).getBalanceRounded();
+        BigDecimal balance = bankServiceImpl.getBankAccount().getBalanceRounded();
 
-        if (!bankService.controlBalance(transferDto.getAmount(), balance)) {
+        if (!bankServiceImpl.controlBalance(transferDto.getAmount(), balance)) {
             return "redirect:/transfer?error";
         }
 
-        TransferDtoSave transferDtoSave = bankService.transferToFriend(principal, transferDto);
+        TransferDtoSave transferDtoSave = bankServiceImpl.transferToFriend(transferDto);
 
-        transactionService.saveTransaction(transferDtoSave);
+        transactionServiceImpl.saveTransaction(transferDtoSave);
 
         return "redirect:/transfer";
     }

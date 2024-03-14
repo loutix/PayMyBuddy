@@ -10,7 +10,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.security.Principal;
 import java.util.List;
 
 @Service
@@ -19,9 +18,12 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    private final AuthUtils authUtils;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthUtils authUtils) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.authUtils = authUtils;
     }
 
     /**
@@ -55,7 +57,7 @@ public class UserService {
      */
     public List<UserCustom> findAllUsers() {
 
-        String currentEmail = AuthUtils.getCurrentUserName();
+        String currentEmail = authUtils.getCurrentUserEmail();
         List<UserCustom> allUsers = userRepository.findAll();
 
         return allUsers.stream()
@@ -66,24 +68,23 @@ public class UserService {
     /**
      * Get all userCustoms from user friendships
      *
-     * @param principal userDetails
      * @return List<UserCustom>
      */
-    public List<UserCustom> getAuthFriendShip(Principal principal) {
-        UserCustom userCustom = userRepository.findByEmail(principal.getName()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public List<UserCustom> getAuthFriendShip() {
+        String currentEmail = authUtils.getCurrentUserEmail();
+        UserCustom userCustom = userRepository.findByEmail(currentEmail).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         return userCustom.getFriendShipList().stream().map(FriendShip::getFriend).toList();
     }
 
     /**
      * Get all users except user friendship
      *
-     * @param principal principal
      * @return List<UserCustom>
      */
-    public List<UserCustom> getAuthNotFriendShip(Principal principal) {
+    public List<UserCustom> getAuthNotFriendShip() {
 
         List<UserCustom> allUsers = this.findAllUsers();
-        List<UserCustom> friendList = this.getAuthFriendShip(principal);
+        List<UserCustom> friendList = this.getAuthFriendShip();
 
         return allUsers.stream()
                 .filter(customUser -> !friendList.contains(customUser))
@@ -97,7 +98,8 @@ public class UserService {
      * @param id id
      */
     public void addFriendShip(Integer id) {
-        UserCustom userCustom = userRepository.findByEmail(AuthUtils.getCurrentUserName()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        String currentEmail = authUtils.getCurrentUserEmail();
+        UserCustom userCustom = userRepository.findByEmail(currentEmail).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         UserCustom friend = userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + id));
         userCustom.addFriend(friend);
         userRepository.save(userCustom);
@@ -110,7 +112,8 @@ public class UserService {
      * @param id id
      */
     public void deleteFriendShip(Integer id) {
-        UserCustom userCustom = userRepository.findByEmail(AuthUtils.getCurrentUserName()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        String currentEmail = authUtils.getCurrentUserEmail();
+        UserCustom userCustom = userRepository.findByEmail(currentEmail).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         UserCustom friend = userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + id));
         userCustom.deleteFriend(friend);
         userRepository.save(userCustom);

@@ -3,24 +3,26 @@ package com.ocr.paymybuddy.service;
 
 import com.ocr.paymybuddy.constants.Fare;
 import com.ocr.paymybuddy.dto.*;
+import com.ocr.paymybuddy.interfaces.BankService;
 import com.ocr.paymybuddy.model.BankAccount;
 import com.ocr.paymybuddy.model.UserCustom;
 import com.ocr.paymybuddy.repository.BankAccountRepository;
+import com.ocr.paymybuddy.utilities.AuthUtils;
 import jakarta.validation.Valid;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.security.Principal;
 
 @Service
-
-public class BankService {
+public class BankServiceImpl implements BankService {
     private final BankAccountRepository bankAccountRepository;
+    private final AuthUtils authUtils;
 
-    public BankService(BankAccountRepository bankAccountRepository) {
+    public BankServiceImpl(BankAccountRepository bankAccountRepository, AuthUtils authUtils) {
         this.bankAccountRepository = bankAccountRepository;
+        this.authUtils = authUtils;
     }
 
     /**
@@ -28,6 +30,7 @@ public class BankService {
      *
      * @param userCustom userCustom
      */
+    @Override
     public void saveBankAccount(UserCustom userCustom) {
         BankAccount bankAccount = new BankAccount();
         bankAccount.setUserCustom(userCustom);
@@ -39,12 +42,12 @@ public class BankService {
     /**
      * User credits their own bank account
      *
-     * @param principal          principal
      * @param depositResponseDto depositResponseDto
      * @return BankAccount
      */
-    public BankAccount creditDeposit(Principal principal, @Valid DepositRequestDto depositResponseDto) {
-        BankAccount bankAccount = this.getBankAccount(principal);
+    @Override
+    public BankAccount creditDeposit(@Valid DepositRequestDto depositResponseDto) {
+        BankAccount bankAccount = this.getBankAccount();
         bankAccount.setBalance(bankAccount.getBalance().add(depositResponseDto.getCredit()));
         bankAccountRepository.save(bankAccount);
         return bankAccount;
@@ -58,8 +61,8 @@ public class BankService {
      * @param balance balance
      * @return boolean
      */
+    @Override
     public Boolean controlBalance(BigDecimal amount, BigDecimal balance) {
-
         //Calculate fees
         BigDecimal fees = calculateTransactionFees(amount);
         //Total
@@ -74,6 +77,7 @@ public class BankService {
      * @param amount amount
      * @return BigDecimal
      */
+
     private BigDecimal calculateTransactionFees(BigDecimal amount) {
         return amount.multiply(Fare.TRANSACTION_FEE_RATE).setScale(2, RoundingMode.HALF_UP);
     }
@@ -81,12 +85,12 @@ public class BankService {
     /**
      * User make a money transfer to a friend
      *
-     * @param principal   principal
      * @param transferDto transferDto
      * @return TransferDtoSave
      */
-    public TransferDtoSave transferToFriend(Principal principal, TransferDto transferDto) {
-        BankAccount bankAccountDebit = getBankAccount(principal);
+    @Override
+    public TransferDtoSave transferToFriend(TransferDto transferDto) {
+        BankAccount bankAccountDebit = getBankAccount();
         BankAccount bankAccountCredit = bankAccountRepository.findByUserCustomEmail(transferDto.getUserCustom().getEmail()).orElseThrow(() -> new UsernameNotFoundException("Bank account not found"));
 
         BigDecimal amount = transferDto.getAmount();
@@ -100,11 +104,10 @@ public class BankService {
         return new TransferDtoSave(bankAccountDebit, bankAccountCredit, amount, fees, transferDto.getDescription(), transferDto.getDate());
     }
 
+    @Override
+    public CashOutDtoResponse transferToIban(@Valid CashOutTransferRequestDto cashOutTransferRequestDto) {
 
-    public CashOutDtoResponse transferToIban(Principal principal, @Valid CashOutTransferRequestDto cashOutTransferRequestDto) {
-
-        BankAccount bankAccountDebit = getBankAccount(principal);
-
+        BankAccount bankAccountDebit = getBankAccount();
         BigDecimal amount = cashOutTransferRequestDto.getDebit();
         BigDecimal fees = calculateTransactionFees(amount);
 
@@ -121,6 +124,7 @@ public class BankService {
      * @param bankAccount bankAccount
      * @param amount      amount
      */
+    @Override
     public void debitAccount(BankAccount bankAccount, BigDecimal amount) {
         BigDecimal fees = calculateTransactionFees(amount);
         BigDecimal totalAmount = amount.add(fees);
@@ -134,19 +138,32 @@ public class BankService {
      * @param bankAccount bankAccount
      * @param amount      amount
      */
+    @Override
     public void creditAccount(BankAccount bankAccount, BigDecimal amount) {
         bankAccount.setBalance(bankAccount.getBalance().add(amount));
         bankAccountRepository.save(bankAccount);
     }
 
-    public BankAccount getBankAccount(Principal principal) {
-        return bankAccountRepository.findByUserCustomEmail(principal.getName()).orElseThrow(() -> new UsernameNotFoundException("Bank account not found"));
+    /**
+     * Get the user bank account
+     *
+     * @return BankAccount
+     */
+    public BankAccount getBankAccount() {
+        String userEmail = authUtils.getCurrentUserEmail();
+        return bankAccountRepository.findByUserCustomEmail(userEmail).orElseThrow(() -> new UsernameNotFoundException("Bank account not found"));
     }
 
 
-    public CashOutRequestDto getCashOut(Principal principal) {
+    /**
+     * Methode to display user IBAN and Balance
+     *
+     * @return CashOutRequestDto
+     */
+    @Override
+    public CashOutRequestDto getCashOut() {
 
-        BankAccount bankAccount = this.getBankAccount(principal);
+        BankAccount bankAccount = this.getBankAccount();
 
         return new CashOutRequestDto(
                 bankAccount.getBalance(),
@@ -157,23 +174,22 @@ public class BankService {
     /**
      * Save user Iban
      *
-     * @param principal      principal
      * @param ibanRequestDto ibanRequestDto
      */
-    public void saveIban(Principal principal, IbanRequestDto ibanRequestDto) {
-        BankAccount bankAccount = this.getBankAccount(principal);
+    @Override
+    public void saveIban(IbanRequestDto ibanRequestDto) {
+        BankAccount bankAccount = this.getBankAccount();
         bankAccount.setIban(ibanRequestDto.getIban());
         bankAccountRepository.save(bankAccount);
     }
 
     /**
      * Delete the user Iban
-     *
-     * @param principal principal
      */
 
-    public void deleteIban(Principal principal) {
-        BankAccount bankAccount = this.getBankAccount(principal);
+    @Override
+    public void deleteIban() {
+        BankAccount bankAccount = this.getBankAccount();
         bankAccount.setIban(null);
         bankAccountRepository.save(bankAccount);
 

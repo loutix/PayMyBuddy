@@ -4,6 +4,7 @@ import com.ocr.paymybuddy.constants.TransactionType;
 import com.ocr.paymybuddy.dto.CashOutDtoResponse;
 import com.ocr.paymybuddy.dto.DepositDtoSave;
 import com.ocr.paymybuddy.dto.TransferDtoSave;
+import com.ocr.paymybuddy.interfaces.TransactionService;
 import com.ocr.paymybuddy.model.BankAccount;
 import com.ocr.paymybuddy.model.Transaction;
 import com.ocr.paymybuddy.repository.TransactionRepository;
@@ -15,11 +16,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Service
-public class TransactionService {
+public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionRepository transactionRepository;
 
-    public TransactionService(TransactionRepository transactionRepository) {
+    public TransactionServiceImpl(TransactionRepository transactionRepository) {
         this.transactionRepository = transactionRepository;
     }
 
@@ -28,6 +29,7 @@ public class TransactionService {
      *
      * @param transferDtoSave transferDtoSave
      */
+    @Override
     public void saveTransaction(TransferDtoSave transferDtoSave) {
 
         String fees = transferDtoSave.getFees().toString();
@@ -59,6 +61,7 @@ public class TransactionService {
      *
      * @param depositDtoSave depositDtoSave
      */
+    @Override
     public void saveDeposit(DepositDtoSave depositDtoSave) {
         //Creditor
         saveSingleTransaction(
@@ -77,6 +80,7 @@ public class TransactionService {
      *
      * @param cashOutDtoResponse cashOutDtoResponse
      */
+    @Override
     public void saveCashOut(CashOutDtoResponse cashOutDtoResponse) {
 
         BigDecimal amountWithFees = cashOutDtoResponse.getAmount().add(cashOutDtoResponse.getFees());
@@ -93,12 +97,12 @@ public class TransactionService {
     }
 
     /**
-     * @param amount amount
-     * @param description  description
+     * @param amount          amount
+     * @param description     description
      * @param transactionType transactionType
-     * @param owner owner
-     * @param friend friend
-     * @param date date
+     * @param owner           owner
+     * @param friend          friend
+     * @param date            date
      */
     private void saveSingleTransaction(BigDecimal amount, String description, TransactionType transactionType, BankAccount owner, BankAccount friend, LocalDateTime date) {
         Transaction transaction = new Transaction();
@@ -112,6 +116,7 @@ public class TransactionService {
     }
 
 
+    @Override
     public Page<Transaction> getTransactionsByBankAccount(BankAccount bankAccount, int page) {
         PageRequest pageRequest = PageRequest.of(page, 5);
         return transactionRepository.findByBankAccountOrderByDateDesc(bankAccount, pageRequest);

@@ -3,7 +3,7 @@ package com.ocr.paymybuddy.controller;
 import com.ocr.paymybuddy.dto.RegisterDto;
 import com.ocr.paymybuddy.model.UserCustom;
 import com.ocr.paymybuddy.repository.UserRepository;
-import com.ocr.paymybuddy.service.BankService;
+import com.ocr.paymybuddy.service.BankServiceImpl;
 import com.ocr.paymybuddy.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
@@ -17,13 +17,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Controller
 public class AuthController {
     private final UserService userService;
-    private final BankService bankService;
+    private final BankServiceImpl bankServiceImpl;
 
     private final UserRepository  userRepository;
 
-    public AuthController(UserService userService, BankService bankService, UserRepository userRepository) {
+    public AuthController(UserService userService, BankServiceImpl bankServiceImpl, UserRepository userRepository) {
         this.userService = userService;
-        this.bankService = bankService;
+        this.bankServiceImpl = bankServiceImpl;
         this.userRepository = userRepository;
     }
 
@@ -55,7 +55,7 @@ public class AuthController {
 
         try {
             UserCustom newUser = userService.saveUser(registerDto);
-            bankService.saveBankAccount(newUser);
+            bankServiceImpl.saveBankAccount(newUser);
             return "redirect:/login?success";
         } catch (ValidationException e) {
 //            result.rejectValue("registerDto", "error.email.duplicate", "Email already exists!");

@@ -9,6 +9,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 
+/**
+ * load current user details from database.
+ */
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
@@ -19,6 +22,13 @@ public class CustomUserDetailsService implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Load user details from database and create an UserDetails Object to allow  Spring Security to find this user in the application.
+     *
+     * @param email email
+     * @return UserDetails
+     * @throws UsernameNotFoundException e
+     */
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
@@ -26,7 +36,6 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         return User.withUsername(userCustom.getEmail())
                 .password(userCustom.getPassword())
-                .roles("USER")
                 .build();
     }
 
