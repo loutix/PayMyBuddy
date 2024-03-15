@@ -7,6 +7,7 @@ import com.ocr.paymybuddy.service.BankServiceImpl;
 import com.ocr.paymybuddy.service.UserServiceImpl;
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
+@Slf4j
 @Controller
 public class AuthController {
     private final UserServiceImpl userServiceImpl;
@@ -30,11 +32,14 @@ public class AuthController {
 
     @GetMapping("/login")
     public String login() {
+        log.info("GET/login ");
         return "registration/login";
     }
 
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
+        log.info("GET/register ");
+
         RegisterDto registerDto = new RegisterDto();
         model.addAttribute("registerDto", registerDto);
         return "registration/register";
@@ -42,6 +47,8 @@ public class AuthController {
 
     @PostMapping("/register/save")
     public String registration(@Valid @ModelAttribute("registerDto") RegisterDto registerDto, BindingResult result, Model model) {
+        log.info("POST/register/save: " + "  registerDto: " + registerDto);
+
 
         if (result.hasErrors()) {
             return "registration/register";
@@ -52,13 +59,11 @@ public class AuthController {
             return "registration/register";
         }
 
-
         try {
             UserCustom newUser = userServiceImpl.saveUser(registerDto);
             bankServiceImpl.saveBankAccount(newUser);
             return "redirect:/login?success";
         } catch (ValidationException e) {
-//            result.rejectValue("registerDto", "error.email.duplicate", "Email already exists!");
             return "redirect:/register?error";
         }
 

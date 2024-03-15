@@ -13,7 +13,7 @@ public class RegisterDto {
     private String firstName;
 
     @NotEmpty
-    @Size(min = 5, max = 15 , message = "First name must be between 5 and 15 characters")
+    @Size(min = 5, max = 15 , message = "Lastname name must be between 5 and 15 characters")
     private String lastName;
 
     @NotEmpty
@@ -21,6 +21,6 @@ public class RegisterDto {
     private String email;
 
     @NotEmpty
-    @Size(min = 5, max = 15 , message = "First name must be between 5 and 15 characters")
+    @Size(min = 5, max = 15 , message = "Password name must be between 5 and 15 characters")
     private String password;
 }

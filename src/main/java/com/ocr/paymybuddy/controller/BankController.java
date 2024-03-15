@@ -8,6 +8,7 @@ import com.ocr.paymybuddy.service.BankServiceImpl;
 import com.ocr.paymybuddy.service.TransactionServiceImpl;
 import com.ocr.paymybuddy.service.UserServiceImpl;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.math.BigDecimal;
 import java.util.List;
 
+@Slf4j
 @Controller
 public class BankController {
 
@@ -37,6 +39,7 @@ public class BankController {
 
     @GetMapping("/deposit")
     public String getMyBankAccount(Model model) {
+        log.info("GET/deposit");
 
         BigDecimal balance = bankServiceImpl.getBankAccount().getBalance();
 
@@ -54,6 +57,7 @@ public class BankController {
                                BindingResult result,
                                Model model
     ) {
+        log.info("POST/register/save: " + "  depositRequestDto: " + depositRequestDto);
 
         if (result.hasErrors()) {
             return "bank/deposit";
@@ -75,6 +79,7 @@ public class BankController {
     /*  Cash out routes    */
     @GetMapping("/cash-out")
     public String getCashOut(Model model) {
+        log.info("GET/cash-out");
 
         CashOutRequestDto cashOutRequestDto = bankServiceImpl.getCashOut();
 
@@ -100,6 +105,7 @@ public class BankController {
         if (result.hasErrors()) {
             return "bank/cashOut";
         }
+        log.info("POST/register/save: " + "  cashOutTransferRequestDto: " + cashOutTransferRequestDto);
 
         BigDecimal balance = bankServiceImpl.getBankAccount().getBalance();
 
@@ -119,6 +125,7 @@ public class BankController {
     public String saveCashOutIban(@Valid @ModelAttribute("ibanRequestDto") IbanRequestDto ibanRequestDto,
                                   BindingResult result,
                                   Model model) {
+        log.info("POST/register/save: " + "  ibanRequestDto: " + ibanRequestDto);
 
         CashOutRequestDto cashOutRequestDto = bankServiceImpl.getCashOut();
 
@@ -147,6 +154,8 @@ public class BankController {
 
     @GetMapping("/cash-out/iban/delete")
     public String DeleteIban(Model model) {
+        log.info("DELETE/delete");
+
         bankServiceImpl.deleteIban();
         return this.getCashOut(model);
     }
@@ -154,6 +163,7 @@ public class BankController {
 
     @GetMapping("/transfer")
     public String transfer(Model model, @RequestParam(defaultValue = "0") int page) {
+        log.info("GET/transfer");
 
         TransferDto transferDto = new TransferDto();
         model.addAttribute("transferDto", transferDto);
@@ -171,6 +181,7 @@ public class BankController {
 
     @PostMapping("/transfer/save")
     public String transferSave(@Valid @ModelAttribute("transferDto") TransferDto transferDto, BindingResult result, Model model) {
+        log.info("POST/transfer/save: " + "  transferDto: " + transferDto);
 
         if (result.hasErrors()) {
             model.addAttribute("transferDto", transferDto);
@@ -192,6 +203,8 @@ public class BankController {
 
     @GetMapping("/contact")
     public String contact() {
+        log.info("GET/contact");
+
         return "contact";
     }
 
