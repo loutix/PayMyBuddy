@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -20,32 +21,48 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(request -> request.requestMatchers(new AntPathRequestMatcher("/public/registerUser")).anonymous())
                 .authorizeHttpRequests(
                         authorize ->
                                 authorize
                                         .requestMatchers(
-                                                "/api/auth/**",
                                                 "/css/**",
                                                 "/js/**",
-                                                "/login",
                                                 "/register",
-                                                "register/save").permitAll()
-                                        .anyRequest().authenticated()
+                                                "/register/save"
+                                        ).permitAll()
+                                        .anyRequest()
+                                        .authenticated()
                 )
                 //.oauth2Login(Customizer.withDefaults())
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/home")
+                        .defaultSuccessUrl("/home", true)
                         .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
                         .addLogoutHandler(new SecurityContextLogoutHandler())
                 );
         return http.build();
     }
+
+
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//        return http.addFilterAfter(new AuditInterceptor(), AnonymousAuthenticationFilter.class)
+//                .authorizeHttpRequests(request -> request.requestMatchers(new AntPathRequestMatcher("/private/**"))
+//                        .authenticated())
+//                .authorizeHttpRequests(request -> request.requestMatchers(new AntPathRequestMatcher("/public/showProducts"))
+//                        .permitAll())
+//                .authorizeHttpRequests(request -> request.requestMatchers(new AntPathRequestMatcher("/public/registerUser"))
+//                        .anonymous())
+//                .build();
+//    }
 
     @Bean
     PasswordEncoder passwordEncoder() {

@@ -1,11 +1,11 @@
-DELETE
-FROM friendships;
-DELETE
-FROM transactions;
-DELETE
-FROM bank_accounts;
-DELETE
-FROM users;
+# DELETE
+# FROM friendships;
+# DELETE
+# FROM transactions;
+# DELETE
+# FROM bank_accounts;
+# DELETE
+# FROM users;
 
 DROP TABLE IF EXISTS friendships;
 DROP TABLE IF EXISTS transactions;

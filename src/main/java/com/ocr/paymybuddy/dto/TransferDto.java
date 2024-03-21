@@ -7,7 +7,6 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Range;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
 public class TransferDto {
@@ -23,7 +22,6 @@ public class TransferDto {
     @NotNull
     private UserCustom userCustom;
 
-    private LocalDateTime date = LocalDateTime.now();
 
 //    public BigDecimal getAmountRounded() {
 ////        return BigDecimal.valueOf(this.amount);

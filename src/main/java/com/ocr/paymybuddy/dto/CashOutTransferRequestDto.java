@@ -14,7 +14,4 @@ public class CashOutTransferRequestDto {
     @Range(min = 0, max = 10000, message = "Debit  must be between 0 and 10 000€")
     private BigDecimal debit;
 
-    @NotNull
-    private final LocalDateTime date = LocalDateTime.now();
-
 }

@@ -6,7 +6,6 @@ import com.ocr.paymybuddy.repository.UserRepository;
 import com.ocr.paymybuddy.service.BankServiceImpl;
 import com.ocr.paymybuddy.service.UserServiceImpl;
 import jakarta.validation.Valid;
-import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,8 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class AuthController {
     private final UserServiceImpl userServiceImpl;
     private final BankServiceImpl bankServiceImpl;
-
-    private final UserRepository  userRepository;
+    private final UserRepository userRepository;
 
     public AuthController(UserServiceImpl userServiceImpl, BankServiceImpl bankServiceImpl, UserRepository userRepository) {
         this.userServiceImpl = userServiceImpl;
@@ -59,13 +57,11 @@ public class AuthController {
             return "registration/register";
         }
 
-        try {
-            UserCustom newUser = userServiceImpl.saveUser(registerDto);
-            bankServiceImpl.saveBankAccount(newUser);
-            return "redirect:/login?success";
-        } catch (ValidationException e) {
-            return "redirect:/register?error";
-        }
+
+        UserCustom newUser = userServiceImpl.saveUser(registerDto);
+        bankServiceImpl.saveBankAccount(newUser);
+        return "redirect:/login?success";
+
 
     }
 }

@@ -28,5 +28,6 @@ public class CashOutDtoResponse {
     @NotEmpty
     private final String description = "Cash out to IBAN";
 
-    private LocalDateTime date;
+    @NotNull
+    private final LocalDateTime date = LocalDateTime.now();
 }

@@ -14,7 +14,6 @@ import java.util.List;
 @Controller
 public class AppController {
 
-
     private final UserServiceImpl userServiceImpl;
 
     public AppController(UserServiceImpl userServiceImpl) {

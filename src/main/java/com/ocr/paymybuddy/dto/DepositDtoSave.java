@@ -2,6 +2,7 @@ package com.ocr.paymybuddy.dto;
 
 import com.ocr.paymybuddy.model.BankAccount;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -20,7 +21,7 @@ public class DepositDtoSave {
 
     private final String description = "Credit deposit";
 
-    @NotEmpty
-    private LocalDateTime date;
+    @NotNull
+    private final LocalDateTime date = LocalDateTime.now();
 
 }

@@ -8,7 +8,6 @@ import com.ocr.paymybuddy.model.BankAccount;
 import com.ocr.paymybuddy.model.UserCustom;
 import com.ocr.paymybuddy.repository.BankAccountRepository;
 import com.ocr.paymybuddy.utilities.AuthUtils;
-import jakarta.validation.Valid;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +45,7 @@ public class BankServiceImpl implements BankService {
      * @return BankAccount
      */
     @Override
-    public BankAccount creditDeposit(@Valid DepositRequestDto depositResponseDto) {
+    public BankAccount creditDeposit(DepositRequestDto depositResponseDto) {
         BankAccount bankAccount = this.getBankAccount();
         bankAccount.setBalance(bankAccount.getBalance().add(depositResponseDto.getCredit()));
         bankAccountRepository.save(bankAccount);
@@ -78,7 +77,7 @@ public class BankServiceImpl implements BankService {
      * @return BigDecimal
      */
 
-    private BigDecimal calculateTransactionFees(BigDecimal amount) {
+    public BigDecimal calculateTransactionFees(BigDecimal amount) {
         return amount.multiply(Fare.TRANSACTION_FEE_RATE).setScale(2, RoundingMode.HALF_UP);
     }
 
@@ -101,11 +100,18 @@ public class BankServiceImpl implements BankService {
         // credit the creditor
         creditAccount(bankAccountCredit, amount);
 
-        return new TransferDtoSave(bankAccountDebit, bankAccountCredit, amount, fees, transferDto.getDescription(), transferDto.getDate());
+        TransferDtoSave transferDtoSave = new TransferDtoSave();
+        transferDtoSave.setBankOrigin(bankAccountDebit);
+        transferDtoSave.setBankTarget(bankAccountCredit);
+        transferDtoSave.setAmount(amount);
+        transferDtoSave.setFees(fees);
+        transferDtoSave.setDescription(transferDto.getDescription());
+
+        return transferDtoSave;
     }
 
     @Override
-    public CashOutDtoResponse transferToIban(@Valid CashOutTransferRequestDto cashOutTransferRequestDto) {
+    public CashOutDtoResponse transferToIban(CashOutTransferRequestDto cashOutTransferRequestDto) {
 
         BankAccount bankAccountDebit = getBankAccount();
         BigDecimal amount = cashOutTransferRequestDto.getDebit();
@@ -114,7 +120,7 @@ public class BankServiceImpl implements BankService {
         // debit the debtor
         debitAccount(bankAccountDebit, amount);
 
-        return new CashOutDtoResponse(bankAccountDebit, amount, fees, cashOutTransferRequestDto.getDate());
+        return new CashOutDtoResponse(bankAccountDebit, amount, fees);
     }
 
 

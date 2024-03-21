@@ -68,7 +68,7 @@ public class BankController {
         model.addAttribute("bankAccount", depositResponseDto);
 
         //register credit
-        DepositDtoSave depositDtoSave = new DepositDtoSave(bankAccount, depositRequestDto.getCredit(), depositRequestDto.getDate());
+        DepositDtoSave depositDtoSave = new DepositDtoSave(bankAccount, depositRequestDto.getCredit());
         transactionServiceImpl.saveDeposit(depositDtoSave);
 
 
@@ -86,7 +86,7 @@ public class BankController {
         // balance + Iban
         model.addAttribute("cashOutRequestDto", cashOutRequestDto);
 
-        // a changer
+
         CashOutTransferRequestDto cashOutTransferRequestDto = new CashOutTransferRequestDto();
         model.addAttribute("cashOutTransferRequestDto", cashOutTransferRequestDto);
 
@@ -100,9 +100,12 @@ public class BankController {
 
     @PostMapping("/cash-out/save")
     public String saveCashOut(@Valid @ModelAttribute("cashOutTransferRequestDto") CashOutTransferRequestDto cashOutTransferRequestDto,
-                              BindingResult result) {
+                              BindingResult result, Model model) {
+
 
         if (result.hasErrors()) {
+            CashOutRequestDto cashOutRequestDto = bankServiceImpl.getCashOut();
+            model.addAttribute("cashOutRequestDto", cashOutRequestDto);
             return "bank/cashOut";
         }
         log.info("POST/register/save: " + "  cashOutTransferRequestDto: " + cashOutTransferRequestDto);
@@ -153,11 +156,11 @@ public class BankController {
 
 
     @GetMapping("/cash-out/iban/delete")
-    public String DeleteIban(Model model) {
+    public String deleteIban() {
         log.info("DELETE/delete");
 
         bankServiceImpl.deleteIban();
-        return this.getCashOut(model);
+        return "redirect:/cash-out";
     }
 
 
@@ -183,12 +186,11 @@ public class BankController {
     public String transferSave(@Valid @ModelAttribute("transferDto") TransferDto transferDto, BindingResult result, Model model) {
         log.info("POST/transfer/save: " + "  transferDto: " + transferDto);
 
-        if (result.hasErrors()) {
-            model.addAttribute("transferDto", transferDto);
-            return "bank/cashOut";
-        }
+//        if (result.hasErrors()) {
+//            return "redirect:/transfer?error_input";
+//        }
 
-        BigDecimal balance = bankServiceImpl.getBankAccount().getBalanceRounded();
+        BigDecimal balance = bankServiceImpl.getBankAccount().getBalance();
 
         if (!bankServiceImpl.controlBalance(transferDto.getAmount(), balance)) {
             return "redirect:/transfer?error";
