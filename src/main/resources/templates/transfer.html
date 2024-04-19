@@ -31,13 +31,13 @@
         </div>
         <div th:if="${param.error_input}">
             <div class="alert alert-danger text-center alert-dismissible fade show" role="alert">
-                All fields are mandatory. Please respect the field format.
+                Transfert annulé! Tous les champs doivent être complétés et respecter le format.
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         </div>
         <div th:if="${param.success}">
             <div class="alert alert-info text-center alert-dismissible fade show" role="alert">
-                <strong>The transfer was made with success to your friend</strong>
+                <strong>Le transfert a été réalisé avec succès</strong>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         </div>
@@ -100,7 +100,7 @@
                            maxlength="25"
                            th:field="*{description}"
                            placeholder="Description"
-                           required>
+                         >
 
                     <div th:if="${#fields.hasErrors('description')}" class="text-danger">
                         <p th:errors="*{description}" class="error"></p>

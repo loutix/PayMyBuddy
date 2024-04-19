@@ -186,9 +186,9 @@ public class BankController {
     public String transferSave(@Valid @ModelAttribute("transferDto") TransferDto transferDto, BindingResult result, Model model) {
         log.info("POST/transfer/save: " + "  transferDto: " + transferDto);
 
-//        if (result.hasErrors()) {
-//            return "redirect:/transfer?error_input";
-//        }
+        if (result.hasErrors()) {
+            return "redirect:/transfer?error_input";
+        }
 
         BigDecimal balance = bankServiceImpl.getBankAccount().getBalance();
 
@@ -200,7 +200,7 @@ public class BankController {
 
         transactionServiceImpl.saveTransaction(transferDtoSave);
 
-        return "redirect:/transfer";
+        return "redirect:/transfer?success";
     }
 
     @GetMapping("/contact")

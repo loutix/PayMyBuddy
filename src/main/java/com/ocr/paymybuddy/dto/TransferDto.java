@@ -22,8 +22,4 @@ public class TransferDto {
     @NotNull
     private UserCustom userCustom;
 
-
-//    public BigDecimal getAmountRounded() {
-////        return BigDecimal.valueOf(this.amount);
-////    }
 }

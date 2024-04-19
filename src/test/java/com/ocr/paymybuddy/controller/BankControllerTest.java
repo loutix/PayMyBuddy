@@ -97,7 +97,6 @@ class BankControllerTest {
     }
 
 
-
     @Test
     @WithMockUser
     @DisplayName("Error in form save a deposit")
@@ -198,7 +197,7 @@ class BankControllerTest {
         BankAccount bankAccount = new BankAccount();
         bankAccount.setBalance(new BigDecimal(100));
 
-        CashOutRequestDto cashOutRequestDto = new CashOutRequestDto(bankAccount.getBalance(), "FR12345678901234567890123456" );
+        CashOutRequestDto cashOutRequestDto = new CashOutRequestDto(bankAccount.getBalance(), "FR12345678901234567890123456");
 
         when(bankServiceImpl.getCashOut()).thenReturn(cashOutRequestDto);
 
@@ -339,106 +338,125 @@ class BankControllerTest {
 //
 //    }
 
-//todo idem erreur si je decommente le if(result.hasErrors)
+
     @Test
     @WithMockUser
     @DisplayName("Save a new transfer")
     public void testTransferSave() throws Exception {
         // GIVEN
+        UserCustom user = new UserCustom();
+        user.setId(1);
+        user.setFirstName("firstname");
+        user.setLastName("lastname");
+        user.setEmail("test@gmail.com");
+        user.setPassword("password");
+
+
         TransferDto transferDto = new TransferDto();
-        transferDto.setDescription("test");
         transferDto.setAmount(new BigDecimal(100));
-        transferDto.setUserCustom(new UserCustom());
+        transferDto.setDescription("test_success_description");
+        transferDto.setUserCustom(user);
 
         BankAccount bankAccount = new BankAccount();
-        bankAccount.setBalance(new BigDecimal(1000));
 
         TransferDtoSave transferDtoSave = new TransferDtoSave();
-        transferDtoSave.setAmount(new BigDecimal(100));
-        transferDtoSave.setBankOrigin(new BankAccount());
-        transferDtoSave.setBankTarget(new BankAccount());
-        transferDtoSave.setFees(new BigDecimal(1));
-        transferDtoSave.setDescription("test");
-
-
+        transferDto.setAmount(new BigDecimal(100));
+        transferDto.setDescription("test_success_description");
+        transferDto.setUserCustom(user);
         // WHEN
         when(bankServiceImpl.getBankAccount()).thenReturn(bankAccount);
-        when(bankServiceImpl.controlBalance(transferDto.getAmount(), bankAccount.getBalance())).thenReturn(true);
+        when(bankServiceImpl.controlBalance(any(BigDecimal.class), any(BigDecimal.class))).thenReturn(true);
+        when(bankServiceImpl.transferToFriend(any(TransferDto.class))).thenReturn(transferDtoSave);
+
+        doNothing().when(transactionServiceImpl).saveTransaction(any(TransferDtoSave.class));
 
 
         mockMvc.perform(post("/transfer/save")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                         .param("amount", String.valueOf(transferDto.getAmount()))
                         .param("description", transferDto.getDescription())
-                        .param("userCustom", String.valueOf(transferDto.getUserCustom())))
+                        .param("userCustom.id", "1"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/transfer"));
-
+                .andExpect(redirectedUrl("/transfer?success"));
 
         //THEN
         verify(bankServiceImpl, times(1)).getBankAccount();
-        verify(bankServiceImpl, times(1)).controlBalance(transferDto.getAmount(), bankAccount.getBalance());
+        verify(bankServiceImpl, times(1)).controlBalance(any(BigDecimal.class), any(BigDecimal.class));
+        verify(bankServiceImpl, times(1)).transferToFriend(any(TransferDto.class));
+        verify(transactionServiceImpl, times(1)).saveTransaction(any(TransferDtoSave.class));
     }
 
-//    @Test
-//    @WithMockUser
-//    @DisplayName("Failed Save a new transfer")
-//    public void testTransferSaveErrorForm() throws Exception {
-//        // GIVEN
-//        TransferDto transferDto = new TransferDto();
-//        transferDto.setDescription("test");
-//        transferDto.setAmount(new BigDecimal(100000000));
-//        transferDto.setUserCustom(new UserCustom());
-//
-//
-//        // WHEN
-//        mockMvc.perform(post("/transfer/save")
-//                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-//                        .param("amount", String.valueOf(transferDto.getAmount()))
-//                        .param("description", transferDto.getDescription())
-//                        .param("userCustom", String.valueOf(transferDto.getUserCustom())))
-//                .andExpect(status().is3xxRedirection())
-//                .andExpect(redirectedUrl("/transfer?error_input"));
-//
-//
-//        //THEN
-//        verify(bankServiceImpl, times(0)).getBankAccount();
-//    }
+    @Test
+    @WithMockUser
+    @DisplayName("Save a new transfer error in form")
+    public void testTransferSaveFormError() throws Exception {
+        // GIVEN
+        TransferDto transferDto = new TransferDto();
+        transferDto.setAmount(new BigDecimal(-100));
+        transferDto.setDescription("test_invalid_description");
+        transferDto.setUserCustom(new UserCustom());
 
-    //todo erreur a corriger
 
-//    @Test
-//    @WithMockUser
-//    @DisplayName("Generate an an error insufficient fund to save transfer")
-//    public void testTransferSaveFailed() throws Exception {
-//
-//        //GIVEN
-//        BigDecimal balance = new BigDecimal(10);
-//        BigDecimal amount = new BigDecimal(100);
-//
-//        BankAccount bankAccount = new BankAccount();
-//        bankAccount.setBalance(balance);
-//
-//
-//        // WHEN
-//        when(bankServiceImpl.getBankAccount()).thenReturn(bankAccount);
-//        when(bankServiceImpl.controlBalance(amount, balance)).thenReturn(false);
-//
-//
-//
-//        mockMvc.perform(post("/transfer/save")
-//                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-//                        .param("amount", amount.toString())
-//                        .param("description", "test insufficient fund")
-//                        .param("userCustom", "1"))
-//                .andExpect(status().is3xxRedirection())
-//                .andExpect(redirectedUrl("/transfer?error"));
-//
-//
-//        // THEN
-//        verify(bankServiceImpl, times(1)).getBankAccount();
-//        verify(bankServiceImpl, times(1)).controlBalance(amount, balance);
-//    }
+        // WHEN
+        mockMvc.perform(post("/transfer/save")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("amount", String.valueOf(transferDto.getAmount()))
+                        .param("description", transferDto.getDescription())
+                        .param("userCustom.id))", "1"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/transfer?error_input"));
+
+        //THEN
+        verify(transactionServiceImpl, times(0)).saveTransaction(any(TransferDtoSave.class));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("Save a new transfer fund not enough")
+    public void testTransferSaveNotFundEnough() throws Exception {
+        // GIVEN
+        UserCustom user = new UserCustom();
+        user.setId(1);
+        user.setFirstName("firstname");
+        user.setLastName("lastname");
+        user.setEmail("test@gmail.com");
+        user.setPassword("password");
+
+
+        TransferDto transferDto = new TransferDto();
+        transferDto.setAmount(new BigDecimal(100));
+        transferDto.setDescription("test_success_description");
+        transferDto.setUserCustom(user);
+
+        BankAccount bankAccount = new BankAccount();
+
+        TransferDtoSave transferDtoSave = new TransferDtoSave();
+        transferDto.setAmount(new BigDecimal(100));
+        transferDto.setDescription("test_success_description");
+        transferDto.setUserCustom(user);
+        // WHEN
+        when(bankServiceImpl.getBankAccount()).thenReturn(bankAccount);
+        when(bankServiceImpl.controlBalance(any(BigDecimal.class), any(BigDecimal.class))).thenReturn(false);
+        when(bankServiceImpl.transferToFriend(any(TransferDto.class))).thenReturn(transferDtoSave);
+
+        doNothing().when(transactionServiceImpl).saveTransaction(any(TransferDtoSave.class));
+
+
+        mockMvc.perform(post("/transfer/save")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("amount", String.valueOf(transferDto.getAmount()))
+                        .param("description", transferDto.getDescription())
+                        .param("userCustom.id", "1"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/transfer?error"));
+
+        //THEN
+        verify(bankServiceImpl, times(1)).getBankAccount();
+        verify(bankServiceImpl, times(1)).controlBalance(any(BigDecimal.class), any(BigDecimal.class));
+        verify(bankServiceImpl, times(0)).transferToFriend(any(TransferDto.class));
+        verify(transactionServiceImpl, times(0)).saveTransaction(any(TransferDtoSave.class));
+    }
+
 
     @Test
     @WithMockUser

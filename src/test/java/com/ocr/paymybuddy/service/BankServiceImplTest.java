@@ -226,7 +226,6 @@ class BankServiceImplTest {
     }
 
 
-
     @Test
     @WithMockUser
     @DisplayName("Transfer to IBAN")
