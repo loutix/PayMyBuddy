@@ -101,8 +101,8 @@ class AppControllerTest {
 
         //When //Then
         mockMvc.perform(get("/"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/home"));
+                .andExpect(status().isOk())
+                .andExpect(view().name("home"));
 
     }
 

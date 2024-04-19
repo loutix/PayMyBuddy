@@ -10,6 +10,7 @@ import com.ocr.paymybuddy.repository.BankAccountRepository;
 import com.ocr.paymybuddy.utilities.AuthUtils;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -45,6 +46,7 @@ public class BankServiceImpl implements BankService {
      * @return BankAccount
      */
     @Override
+    @Transactional
     public BankAccount creditDeposit(DepositRequestDto depositResponseDto) {
         BankAccount bankAccount = this.getBankAccount();
         bankAccount.setBalance(bankAccount.getBalance().add(depositResponseDto.getCredit()));
@@ -88,6 +90,7 @@ public class BankServiceImpl implements BankService {
      * @return TransferDtoSave
      */
     @Override
+    @Transactional
     public TransferDtoSave transferToFriend(TransferDto transferDto) {
         BankAccount bankAccountDebit = getBankAccount();
         BankAccount bankAccountCredit = bankAccountRepository.findByUserCustomEmail(transferDto.getUserCustom().getEmail()).orElseThrow(() -> new UsernameNotFoundException("Bank account not found"));
@@ -111,6 +114,7 @@ public class BankServiceImpl implements BankService {
     }
 
     @Override
+    @Transactional
     public CashOutDtoResponse transferToIban(CashOutTransferRequestDto cashOutTransferRequestDto) {
 
         BankAccount bankAccountDebit = getBankAccount();
@@ -131,6 +135,7 @@ public class BankServiceImpl implements BankService {
      * @param amount      amount
      */
     @Override
+    @Transactional
     public void debitAccount(BankAccount bankAccount, BigDecimal amount) {
         BigDecimal fees = calculateTransactionFees(amount);
         BigDecimal totalAmount = amount.add(fees);
@@ -145,6 +150,7 @@ public class BankServiceImpl implements BankService {
      * @param amount      amount
      */
     @Override
+    @Transactional
     public void creditAccount(BankAccount bankAccount, BigDecimal amount) {
         bankAccount.setBalance(bankAccount.getBalance().add(amount));
         bankAccountRepository.save(bankAccount);

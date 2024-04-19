@@ -55,12 +55,17 @@ public class AppController {
     @GetMapping("/home")
     public String welcomePage() {
         log.info("GET/home ");
+
+        if (userServiceImpl.isAnonymous()) {
+            return "homeNotConnected";
+        }
+
         return "home";
     }
 
     @GetMapping("/")
     public String HomePage() {
-        return "redirect:/home";
+        return welcomePage();
     }
 
 }

@@ -115,9 +115,7 @@
                                required>
 
 
-                        <div th:if="${#fields.hasErrors('iban')}" class="text-danger">
-                            <p th:errors="*{iban}" class="error"></p>
-                        </div>
+                        <div th:if="${#fields.hasErrors('iban')}" class="text-danger"><p th:errors="*{iban}" class="error"></p></div>
 
                         <button type="submit" class="btn btn-primary mt-3">Confirm cash-out</button>
                     </div>

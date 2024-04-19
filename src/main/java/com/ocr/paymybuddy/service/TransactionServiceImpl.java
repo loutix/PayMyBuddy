@@ -11,6 +11,7 @@ import com.ocr.paymybuddy.repository.TransactionRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -30,6 +31,7 @@ public class TransactionServiceImpl implements TransactionService {
      * @param transferDtoSave transferDtoSave
      */
     @Override
+    @Transactional
     public void saveTransaction(TransferDtoSave transferDtoSave) {
 
         String fees = transferDtoSave.getFees().toString();

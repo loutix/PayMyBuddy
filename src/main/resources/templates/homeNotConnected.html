@@ -29,29 +29,14 @@
                     <li class="nav-item">
                         <a class="nav-link active" aria-current="page" th:href="@{/home}">Home</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/transfer}">Transfer</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                           aria-expanded="false">
-                            Bank
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" th:href="@{/deposit}">deposit</a></li>
-                            <li><a class="dropdown-item" th:href="@{/cash-out}">cash-out</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/contact}">About</a>
-                    </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                            aria-expanded="false">
                             Profile
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" th:href="@{/logout}">Logout</a></li>
+                            <li><a class="dropdown-item" th:href="@{/login}">Login</a></li>
+                            <li><a class="dropdown-item" th:href="@{/register}">Register</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -61,8 +46,21 @@
 </header>
 
 <main class="container my-5">
-    <div id="content" layout:fragment="content">
+    <div layout:fragment="content">
+
+        <section class="jumbotron text-center">
+            <div class="container">
+                <h1 class="jumbotron-heading">Welcome to Pay My Buddy!</h1>
+                <p class="lead text-muted">Please register or login to access add all functionalities</p>
+
+                <div class="d-grid gap-2 col-6 mx-auto">
+                    <a href="/login" class="btn btn-secondary" type="button">Welcome back please LOGIN</a>
+                    <a href="/register" class="btn btn-primary" type="button">New user please REGISTER</a>
+                </div>
+            </div>
+        </section>
     </div>
+
 </main>
 
 <footer id="footer" class="bg-body-tertiary text-center text-lg-start mt-3">

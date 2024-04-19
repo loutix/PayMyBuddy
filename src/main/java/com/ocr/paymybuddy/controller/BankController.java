@@ -57,7 +57,7 @@ public class BankController {
                                BindingResult result,
                                Model model
     ) {
-        log.info("POST/register/save: " + "  depositRequestDto: " + depositRequestDto);
+        log.info("POST/register/save:   depositRequestDto: {}", depositRequestDto);
 
         if (result.hasErrors()) {
             return "bank/deposit";

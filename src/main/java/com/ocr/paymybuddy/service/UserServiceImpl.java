@@ -6,12 +6,18 @@ import com.ocr.paymybuddy.model.FriendShip;
 import com.ocr.paymybuddy.model.UserCustom;
 import com.ocr.paymybuddy.repository.UserRepository;
 import com.ocr.paymybuddy.utilities.AuthUtils;
+import jakarta.transaction.Transactional;
 import jakarta.validation.ValidationException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -32,6 +38,7 @@ public class UserServiceImpl implements UserService {
      * @param registerDto registerDto
      * @return UserCustom
      */
+    @Transactional
     @Override
     public UserCustom saveUser(RegisterDto registerDto) {
 
@@ -76,7 +83,11 @@ public class UserServiceImpl implements UserService {
     public List<UserCustom> getAuthFriendShip() {
         String currentEmail = authUtils.getCurrentUserEmail();
         UserCustom userCustom = userRepository.findByEmail(currentEmail).orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        return userCustom.getFriendShipList().stream().map(FriendShip::getFriend).toList();
+        return userCustom.getFriendShipList()
+                .stream()
+                .map(FriendShip::getFriend)
+                .sorted(Comparator.comparing(friend -> friend.getLastName()))
+                .toList();
     }
 
     /**
@@ -92,6 +103,7 @@ public class UserServiceImpl implements UserService {
 
         return allUsers.stream()
                 .filter(customUser -> !friendList.contains(customUser))
+                .sorted(Comparator.comparing(userCustom -> userCustom.getLastName()))
                 .toList();
     }
 
@@ -101,6 +113,7 @@ public class UserServiceImpl implements UserService {
      *
      * @param id id
      */
+    @Transactional
     @Override
     public void addFriendShip(Integer id) {
         String currentEmail = authUtils.getCurrentUserEmail();
@@ -116,6 +129,7 @@ public class UserServiceImpl implements UserService {
      *
      * @param id id
      */
+    @Transactional
     @Override
     public void deleteFriendShip(Integer id) {
         String currentEmail = authUtils.getCurrentUserEmail();
@@ -123,5 +137,14 @@ public class UserServiceImpl implements UserService {
         UserCustom friend = userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + id));
         userCustom.deleteFriend(friend);
         userRepository.save(userCustom);
+    }
+
+
+    public Boolean isAnonymous() {
+        String currentEmail = authUtils.getCurrentUserEmail();
+        Optional<UserCustom> userCustom = userRepository.findByEmail(currentEmail);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        return authentication instanceof AnonymousAuthenticationToken && userCustom.isEmpty();
     }
 }
