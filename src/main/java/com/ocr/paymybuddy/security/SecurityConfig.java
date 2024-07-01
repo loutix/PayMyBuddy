@@ -16,7 +16,13 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
+    /**
+     * Configures the security filter chain.
+     *
+     * @param http the HttpSecurity configuration
+     * @return the configured SecurityFilterChain
+     * @throws Exception if an error occurs while configuring security
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -36,7 +42,6 @@ public class SecurityConfig {
                                         .anyRequest()
                                         .authenticated()
                 )
-                //.oauth2Login(Customizer.withDefaults())
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
@@ -53,27 +58,25 @@ public class SecurityConfig {
         return http.build();
     }
 
-
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        return http.addFilterAfter(new AuditInterceptor(), AnonymousAuthenticationFilter.class)
-//                .authorizeHttpRequests(request -> request.requestMatchers(new AntPathRequestMatcher("/private/**"))
-//                        .authenticated())
-//                .authorizeHttpRequests(request -> request.requestMatchers(new AntPathRequestMatcher("/public/showProducts"))
-//                        .permitAll())
-//                .authorizeHttpRequests(request -> request.requestMatchers(new AntPathRequestMatcher("/public/registerUser"))
-//                        .anonymous())
-//                .build();
-//    }
-
+    /**
+     * a PasswordEncoder bean.
+     *
+     * @return a BCryptPasswordEncoder instance
+     */
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
 
-    // Permet a spring de savoirt qui est authentifié
-    // il faut lui dire ou il doit chercher les infis d'un user pour qu'il fasse son contrôle
+    /**
+     * Provides the AuthenticationManager bean.
+     * This tells Spring where to look for user information to perform authentication.
+     *
+     * @param authenticationConfiguration the AuthenticationConfiguration instance
+     * @return the configured AuthenticationManager
+     * @throws Exception if an error occurs while configuring authentication
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
