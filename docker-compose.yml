@@ -14,22 +14,28 @@ services:
       SPRING_DATASOURCE_PASSWORD: rootpassword
     depends_on:
       - database_mariadb
+    networks:
+      - pay-network
 
   database_mariadb:
     image: mariadb:latest
     container_name: mariadb_container
+    ports:
+      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: pay_app
+      MYSQL_USER: root
+      MYSQL_PASSWORD: rootpassword
     volumes:
       - db-data:/var/lib/mysql
-    ports:
-      - "3306:3306"
+    networks:
+      - pay-network
 
 volumes:
   db-data:
 
     #*********** NETWORK ***********
 networks:
-  medilab-network:
+  pay-network:
     driver: bridge
