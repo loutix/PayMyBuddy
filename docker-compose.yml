@@ -27,3 +27,8 @@ services:
 
 volumes:
   db-data:
+
+    #*********** NETWORK ***********
+networks:
+  medilab-network:
+    driver: bridge
