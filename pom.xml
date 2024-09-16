@@ -99,12 +99,12 @@
                             <BP_JVM_VERSION>21</BP_JVM_VERSION>
                         </env>
                     </image>
-                    <docker>
-                        <publishRegistry>
+<!--                    <docker>-->
+<!--                        <publishRegistry>-->
 <!--                            <username>${docker.publishRegistry.username}</username>-->
 <!--                            <password>${docker.publishRegistry.password}</password>-->
-                        </publishRegistry>
-                    </docker>
+<!--                        </publishRegistry>-->
+<!--                    </docker>-->
                 </configuration>
             </plugin>
             <plugin>
