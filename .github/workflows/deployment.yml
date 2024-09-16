@@ -19,6 +19,10 @@ jobs:
             mkdir /opt/applications/mvp_projets/${{env.IMAGE}}
             ls -al /opt/applications/mvp_projets
 
+      # New step to add execute permissions to mvnw
+      - name: Add execute permissions to mvnw
+        run: chmod +x ./mvnw
+
   generate-image:
     name: generate image
     runs-on: ubuntu-latest
