@@ -43,7 +43,7 @@ jobs:
           -Dmaven.test.skip=true
 
     run-container:
-      name: grun-container
+      name: run-container
       runs-on: ubuntu-latest
       needs: ['generate-image']
       steps:
