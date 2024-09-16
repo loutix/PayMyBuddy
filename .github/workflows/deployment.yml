@@ -60,7 +60,7 @@ jobs:
 #            source: "docker-compose.yml"
 #            target: /opt/applications/mvp_projets/${{env.IMAGE}}
 #
-#        - name: execute commands to run container
+#          - name: execute commands to run container
 #          uses: appleboy/ssh-action@v1.0.3
 #          with:
 #            host: ${{ secrets.HOST }}
