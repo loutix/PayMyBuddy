@@ -81,4 +81,7 @@ jobs:
               docker compose -f /opt/applications/mvp_projets/${{env.IMAGE}}/docker-compose.yml up -d
               mkdir /opt/applications/mvp_projets/${{env.IMAGE}}
               ls -al /opt/applications/mvp_projets
+              
+
+#              test1
 
