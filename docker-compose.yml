@@ -2,7 +2,7 @@ services:
 
   #*********** MARIA DB ***********
   paymybuddy:
-    image: loutix/paymybuddy:0.0.1
+    image: loutix/paymybuddy:latest
     container_name: paymybuddy
     restart: always
     environment:
